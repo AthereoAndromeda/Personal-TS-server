@@ -1,8 +1,11 @@
 import fastify, { FastifyInstance } from "fastify";
 import fs from "fs";
-import mercurius from "mercurius";
 import path from "path";
+import gqlSchema from "./graphql";
+import fastifyCors from "fastify-cors";
+import mercurius from "mercurius";
 import { Route } from "typings";
+import { checkNodeEnv } from "./utils";
 
 const app = fastify({
 	logger: {
@@ -11,10 +14,23 @@ const app = fastify({
 });
 
 async function registerPlugins(app: FastifyInstance) {
-	// app.register(mercurius, {
-	// 	schema: [],
-	// 	graphiql: "/playground",
-	// });
+	await app.register(mercurius, {
+		schema: gqlSchema,
+		graphiql: "playground",
+		context: () => ["jh"],
+	});
+
+	await app.register(fastifyCors, {
+		origin: "*",
+	});
+
+	if (checkNodeEnv("development")) {
+		const Altair = (await import("altair-fastify-plugin")).default;
+
+		await app.register(Altair, {
+			path: "/altair",
+		});
+	}
 }
 
 async function registerRoutes(app: FastifyInstance) {
