@@ -1,5 +1,6 @@
 import fastify, { FastifyInstance } from "fastify";
 import fs from "fs";
+import mercurius from "mercurius";
 import path from "path";
 import { Route } from "typings";
 
@@ -8,6 +9,31 @@ const app = fastify({
 		prettyPrint: true,
 	},
 });
+
+async function registerPlugins(app: FastifyInstance) {
+	// app.register(mercurius, {
+	// 	schema: [],
+	// 	graphiql: "/playground",
+	// });
+}
+
+async function registerRoutes(app: FastifyInstance) {
+	// Checks for file that ends in `.ts` or `.js`
+	const validFileRegex = /\.js$|\.ts$/;
+
+	const FilesInRoutes = await fs.promises.readdir(
+		path.resolve(__dirname, "./routes/")
+	);
+
+	const routeFiles = FilesInRoutes.filter(file => validFileRegex.test(file));
+
+	for (const routeFile of routeFiles) {
+		const routeImport = await import(`./routes/${routeFile}`);
+		const { path, route }: Route = routeImport.default;
+
+		app.register(route, { prefix: path });
+	}
+}
 
 /**
  * Start the Server
@@ -18,17 +44,8 @@ async function start(app: FastifyInstance) {
 		const { PORT } = process.env;
 		if (!PORT) throw "Port Not Found";
 
-		const routeFiles = (
-			await fs.promises.readdir(path.resolve(__dirname, "./routes/"))
-		).filter(file => /\.js$|\.ts$/.test(file));
-
-		for (const routeFile of routeFiles) {
-			const { path, route }: Route = (
-				await import(`./routes/${routeFile}`)
-			).default;
-
-			app.register(route, { prefix: path });
-		}
+		await registerPlugins(app);
+		await registerRoutes(app);
 
 		await app.listen(PORT);
 		console.log(`Listening to port ${PORT}`);
