@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 
 export interface Context {
-	db: PrismaClient;
+    db: PrismaClient;
 }

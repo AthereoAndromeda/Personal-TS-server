@@ -8,47 +8,47 @@ import { Route } from "typings";
 import { checkNodeEnv } from "./utils";
 
 const app = fastify({
-	logger: {
-		prettyPrint: true,
-	},
+    logger: {
+        prettyPrint: true,
+    },
 });
 
 async function registerPlugins(app: FastifyInstance) {
-	await app.register(mercurius, {
-		schema: gqlSchema,
-		graphiql: "playground",
-		context: () => ["jh"],
-	});
+    await app.register(mercurius, {
+        schema: gqlSchema,
+        graphiql: "playground",
+        context: () => ["jh"],
+    });
 
-	await app.register(fastifyCors, {
-		origin: "*",
-	});
+    await app.register(fastifyCors, {
+        origin: "*",
+    });
 
-	if (checkNodeEnv("development")) {
-		const Altair = (await import("altair-fastify-plugin")).default;
+    if (checkNodeEnv("development")) {
+        const Altair = (await import("altair-fastify-plugin")).default;
 
-		await app.register(Altair, {
-			path: "/altair",
-		});
-	}
+        await app.register(Altair, {
+            path: "/altair",
+        });
+    }
 }
 
 async function registerRoutes(app: FastifyInstance) {
-	// Checks for file that ends in `.ts` or `.js`
-	const validFileRegex = /\.js$|\.ts$/;
+    // Checks for file that ends in `.ts` or `.js`
+    const validFileRegex = /\.js$|\.ts$/;
 
-	const FilesInRoutes = await fs.promises.readdir(
-		path.resolve(__dirname, "./routes/")
-	);
+    const FilesInRoutes = await fs.promises.readdir(
+        path.resolve(__dirname, "./routes/")
+    );
 
-	const routeFiles = FilesInRoutes.filter(file => validFileRegex.test(file));
+    const routeFiles = FilesInRoutes.filter(file => validFileRegex.test(file));
 
-	for (const routeFile of routeFiles) {
-		const routeImport = await import(`./routes/${routeFile}`);
-		const { path, route }: Route = routeImport.default;
+    for (const routeFile of routeFiles) {
+        const routeImport = await import(`./routes/${routeFile}`);
+        const { path, route }: Route = routeImport.default;
 
-		app.register(route, { prefix: path });
-	}
+        app.register(route, { prefix: path });
+    }
 }
 
 /**
@@ -56,19 +56,19 @@ async function registerRoutes(app: FastifyInstance) {
  * @param app
  */
 async function start(app: FastifyInstance) {
-	try {
-		const { PORT } = process.env;
-		if (!PORT) throw "Port Not Found";
+    try {
+        const { PORT } = process.env;
+        if (!PORT) throw "Port Not Found";
 
-		await registerPlugins(app);
-		await registerRoutes(app);
+        await registerPlugins(app);
+        await registerRoutes(app);
 
-		await app.listen(PORT);
-		console.log(`Listening to port ${PORT}`);
-	} catch (err) {
-		app.log.error(err);
-		// console.error(err);
-	}
+        await app.listen(PORT);
+        console.log(`Listening to port ${PORT}`);
+    } catch (err) {
+        app.log.error(err);
+        // console.error(err);
+    }
 }
 
 start(app);
