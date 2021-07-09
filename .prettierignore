@@ -1,3 +1,4 @@
 node_modules
+nexus-typegen.ts
 package*.json
 tsconfig.json
