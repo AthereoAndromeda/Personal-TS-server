@@ -65,6 +65,11 @@ export interface NexusGenFieldTypeNames {
 }
 
 export interface NexusGenArgTypes {
+  Query: {
+    verse: { // args
+      id?: number | null; // Int
+    }
+  }
 }
 
 export interface NexusGenAbstractTypeMembers {
