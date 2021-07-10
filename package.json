@@ -7,6 +7,9 @@
     "dev": "node -r dotenv/config .",
     "ts-dev": "ts-node-dev -r dotenv/config src/index.ts",
     "build": "tsc",
+    "swc-build": "swc src -d swc-dist --config-file .swcrc",
+    "swc-build2": "swc swc-dist -d swc-dist --config-file .swcrc",
+    "swc-dev": "node -r dotenv/config swc-dist/index.js",
     "ts-node": "ts-node-dev"
   },
   "repository": {
@@ -28,8 +31,6 @@
     "nexus": "^1.1.0"
   },
   "devDependencies": {
-    "@swc/cli": "^0.1.46",
-    "@swc/core": "^1.2.63",
     "@types/node": "^16.3.0",
     "@types/ws": "^7.4.6",
     "@typescript-eslint/eslint-plugin": "^4.28.2",
