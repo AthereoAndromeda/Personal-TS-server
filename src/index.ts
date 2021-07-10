@@ -10,7 +10,7 @@ import { checkNodeEnv } from "./utils";
 
 const app = fastify({
     logger: {
-        prettyPrint: true,
+        prettyPrint: checkNodeEnv("development") ? true : false,
     },
 });
 
