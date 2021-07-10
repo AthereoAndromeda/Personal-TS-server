@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VerseQuery = exports.VerseObject = void 0;
+exports.VerseMutation = exports.VerseQuery = exports.VerseObject = void 0;
 const nexus_1 = require("nexus");
 exports.VerseObject = nexus_1.objectType({
     name: "Verse",
@@ -13,14 +13,44 @@ exports.VerseObject = nexus_1.objectType({
 });
 exports.VerseQuery = nexus_1.queryField("verse", {
     type: nexus_1.list("Verse"),
-    resolve(source, args, ctx) {
-        // TODO link to db
-        return [
-            {
-                content: "f",
-                title: "2",
-                id: 2,
+    args: {
+        id: nexus_1.intArg(),
+    },
+    async resolve(_, args, ctx) {
+        if (args.id) {
+            const data = await ctx.db.verse.findFirst({
+                where: {
+                    id: args.id,
+                },
+            });
+            return [data];
+        }
+        return await ctx.db.verse.findMany();
+    },
+});
+exports.VerseMutation = nexus_1.mutationField("verse", {
+    type: "Verse",
+    args: {
+        id: nexus_1.nonNull(nexus_1.intArg()),
+        title: nexus_1.nonNull(nexus_1.stringArg()),
+        content: nexus_1.nonNull(nexus_1.stringArg()),
+    },
+    async resolve(_, args, ctx) {
+        const res = await ctx.db.verse.upsert({
+            where: {
+                id: args.id,
             },
-        ];
+            update: {
+                id: args.id,
+                title: args.title,
+                content: args.content,
+            },
+            create: {
+                id: args.id,
+                title: args.title,
+                content: args.content,
+            },
+        });
+        return res;
     },
 });

@@ -29,7 +29,7 @@ exports.default = nexus_1.makeSchema({
     types,
     outputs: {
         schema: path_1.default.resolve(__dirname, "./schema.graphql"),
-        typegen: path_1.default.resolve(__dirname, "./nexus-typegen.ts"),
+        typegen: path_1.default.resolve(__dirname, "./nexus-typegen.d.ts"),
     },
     sourceTypes: {
         modules: [

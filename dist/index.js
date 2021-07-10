@@ -28,17 +28,21 @@ const path_1 = __importDefault(require("path"));
 const graphql_1 = __importDefault(require("./graphql"));
 const fastify_cors_1 = __importDefault(require("fastify-cors"));
 const mercurius_1 = __importDefault(require("mercurius"));
+const PrismaClient_1 = __importDefault(require("./schema/PrismaClient"));
 const utils_1 = require("./utils");
 const app = fastify_1.default({
     logger: {
-        prettyPrint: true,
+        prettyPrint: utils_1.checkNodeEnv("development") ? true : false,
     },
 });
+const ctx = {
+    db: PrismaClient_1.default,
+};
 async function registerPlugins(app) {
     await app.register(mercurius_1.default, {
         schema: graphql_1.default,
         graphiql: "playground",
-        context: () => ["jh"],
+        context: () => ctx,
     });
     await app.register(fastify_cors_1.default, {
         origin: "*",
@@ -63,13 +67,14 @@ async function registerRoutes(app) {
 }
 /**
  * Start the Server
- * @param app
+ * @param app App instance
  */
 async function start(app) {
     try {
         const { PORT } = process.env;
         if (!PORT)
             throw "Port Not Found";
+        await PrismaClient_1.default.$connect();
         await registerPlugins(app);
         await registerRoutes(app);
         await app.listen(PORT);
