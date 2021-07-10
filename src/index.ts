@@ -4,6 +4,7 @@ import path from "path";
 import gqlSchema from "./graphql";
 import fastifyCors from "fastify-cors";
 import mercurius from "mercurius";
+import prisma from "./schema/PrismaClient";
 import { Route } from "typings";
 import { checkNodeEnv } from "./utils";
 
@@ -13,11 +14,15 @@ const app = fastify({
     },
 });
 
+const ctx = {
+    db: prisma,
+};
+
 async function registerPlugins(app: FastifyInstance) {
     await app.register(mercurius, {
         schema: gqlSchema,
         graphiql: "playground",
-        context: () => ["jh"],
+        context: () => ctx,
     });
 
     await app.register(fastifyCors, {
