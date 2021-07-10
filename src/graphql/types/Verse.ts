@@ -1,4 +1,12 @@
-import { intArg, list, objectType, queryField } from "nexus";
+import {
+    intArg,
+    list,
+    mutationField,
+    nonNull,
+    objectType,
+    queryField,
+    stringArg,
+} from "nexus";
 
 export const VerseObject = objectType({
     name: "Verse",
@@ -15,7 +23,7 @@ export const VerseQuery = queryField("verse", {
     args: {
         id: intArg(),
     },
-    async resolve(source, args, ctx) {
+    async resolve(_, args, ctx) {
         if (args.id) {
             const data = await ctx.db.verse.findFirst({
                 where: {
@@ -26,12 +34,34 @@ export const VerseQuery = queryField("verse", {
             return [data];
         }
 
-        return [
-            {
-                content: "f",
-                title: "2",
-                id: 2,
+        return await ctx.db.verse.findMany();
+    },
+});
+
+export const VerseMutation = mutationField("verse", {
+    type: "Verse",
+    args: {
+        id: nonNull(intArg()),
+        title: nonNull(stringArg()),
+        content: nonNull(stringArg()),
+    },
+    async resolve(_, args, ctx) {
+        const res = await ctx.db.verse.upsert({
+            where: {
+                id: args.id,
             },
-        ];
+            update: {
+                id: args.id,
+                title: args.title,
+                content: args.content,
+            },
+            create: {
+                id: args.id,
+                title: args.title,
+                content: args.content,
+            },
+        });
+
+        return res;
     },
 });
