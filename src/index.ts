@@ -58,13 +58,14 @@ async function registerRoutes(app: FastifyInstance) {
 
 /**
  * Start the Server
- * @param app
+ * @param app App instance
  */
 async function start(app: FastifyInstance) {
     try {
         const { PORT } = process.env;
         if (!PORT) throw "Port Not Found";
 
+        await prisma.$connect();
         await registerPlugins(app);
         await registerRoutes(app);
 
