@@ -9,5 +9,7 @@
         "esModuleInterop": true,
         "pretty": true,
     },
-    "exclude": []
+    "exclude": [
+        "prisma"
+    ]
 }
