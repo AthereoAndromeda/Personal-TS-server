@@ -28,6 +28,7 @@ export interface NexusGenScalars {
 }
 
 export interface NexusGenObjects {
+  Mutation: {};
   Query: {};
   Verse: model.Verse;
 }
@@ -43,6 +44,9 @@ export type NexusGenRootTypes = NexusGenObjects
 export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars
 
 export interface NexusGenFieldTypes {
+  Mutation: { // field return type
+    verse: NexusGenRootTypes['Verse'] | null; // Verse
+  }
   Query: { // field return type
     verse: Array<NexusGenRootTypes['Verse'] | null> | null; // [Verse]
   }
@@ -54,6 +58,9 @@ export interface NexusGenFieldTypes {
 }
 
 export interface NexusGenFieldTypeNames {
+  Mutation: { // field return type name
+    verse: 'Verse'
+  }
   Query: { // field return type name
     verse: 'Verse'
   }
@@ -65,6 +72,13 @@ export interface NexusGenFieldTypeNames {
 }
 
 export interface NexusGenArgTypes {
+  Mutation: {
+    verse: { // args
+      content: string; // String!
+      id: number; // Int!
+      title: string; // String!
+    }
+  }
   Query: {
     verse: { // args
       id?: number | null; // Int
