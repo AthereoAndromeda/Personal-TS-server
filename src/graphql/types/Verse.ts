@@ -1,4 +1,4 @@
-import { list, objectType, queryField } from "nexus";
+import { intArg, list, objectType, queryField } from "nexus";
 
 export const VerseObject = objectType({
     name: "Verse",
@@ -12,8 +12,20 @@ export const VerseObject = objectType({
 
 export const VerseQuery = queryField("verse", {
     type: list("Verse"),
-    resolve(source, args, ctx) {
-        // TODO link to db
+    args: {
+        id: intArg(),
+    },
+    async resolve(source, args, ctx) {
+        if (args.id) {
+            const data = await ctx.db.verse.findFirst({
+                where: {
+                    id: args.id,
+                },
+            });
+
+            return [data];
+        }
+
         return [
             {
                 content: "f",
