@@ -3,3 +3,4 @@ dist
 nexus-typegen.*ts
 package*.json
 tsconfig.json
+.github/workflows
