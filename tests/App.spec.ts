@@ -26,7 +26,7 @@ describe("Test Authorization", () => {
             method: "GET",
             url: "/",
             headers: {
-                Authorization: "incorrectAuthorizationKey",
+                authorization: "incorrectAuthorizationKey",
             },
         });
 
@@ -49,9 +49,9 @@ describe("Test Authorization", () => {
     it("Should Return 200 Success", async () => {
         const res = await app1.inject({
             method: "GET",
-            url: "/",
+            url: "/verse",
             headers: {
-                Authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTHKEY,
             },
         });
 
