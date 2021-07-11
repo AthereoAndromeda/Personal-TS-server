@@ -57,7 +57,7 @@ async function registerRoutes(app: FastifyInstance) {
         const routeImport = await import(`./routes/${routeFile}`);
         const { path, route }: Route = routeImport.default;
 
-        app.register(route, { prefix: path });
+        await app.register(route, { prefix: path });
         app.log.info(`[${routeFile}]: ${path}`);
     }
 }
