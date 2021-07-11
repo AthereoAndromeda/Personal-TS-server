@@ -69,7 +69,7 @@ async function start(app: FastifyInstance) {
         await registerPlugins(app);
         await registerRoutes(app);
 
-        await app.listen(PORT);
+        await app.listen(PORT, "0.0.0.0");
         console.log(`Listening to port ${PORT}`);
     } catch (err) {
         app.log.error(err);
