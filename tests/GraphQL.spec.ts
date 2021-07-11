@@ -2,8 +2,6 @@ import buildServer from "../src/server";
 import fastify, { FastifyInstance } from "fastify";
 import prisma from "../src/schema/PrismaClient";
 import * as gql from "gql-query-builder";
-import dotenv from "dotenv";
-dotenv.config();
 
 let app2: FastifyInstance;
 

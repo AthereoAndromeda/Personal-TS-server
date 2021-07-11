@@ -1,8 +1,6 @@
 import buildServer from "../src/server";
 import fastify, { FastifyInstance } from "fastify";
 import prisma from "../src/schema/PrismaClient";
-import dotenv from "dotenv";
-dotenv.config();
 
 let app1: FastifyInstance;
 let prisma1 = prisma;
