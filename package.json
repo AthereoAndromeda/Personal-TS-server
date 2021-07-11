@@ -7,9 +7,7 @@
     "dev": "node -r dotenv/config .",
     "ts-dev": "ts-node-dev -r dotenv/config src/index.ts",
     "build": "tsc",
-    "swc-build": "swc src -d swc-dist --config-file .swcrc",
-    "swc-build2": "swc swc-dist -d swc-dist --config-file .swcrc",
-    "swc-dev": "node -r dotenv/config swc-dist/index.js",
+    "start": "node .",
     "ts-node": "ts-node-dev"
   },
   "repository": {
@@ -28,7 +26,8 @@
     "fastify-cors": "^6.0.1",
     "graphql": "^15.5.1",
     "mercurius": "^8.0.0",
-    "nexus": "^1.1.0"
+    "nexus": "^1.1.0",
+    "prisma": "^2.26.0"
   },
   "devDependencies": {
     "@types/node": "^16.3.0",
@@ -39,7 +38,6 @@
     "dotenv": "^10.0.0",
     "eslint": "^7.30.0",
     "pino-pretty": "^5.1.1",
-    "prisma": "^2.26.0",
     "rxjs": "^7.2.0",
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.3.5"
