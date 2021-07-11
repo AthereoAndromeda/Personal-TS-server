@@ -21,7 +21,7 @@ describe("Test GraphQL Endpoint", () => {
         return Promise.resolve();
     });
 
-    it("Query: Get All Verses", async () => {
+    it("Queries All Verses", async () => {
         const payload = gql.query({
             operation: "verse",
             fields: ["id", "title", "content"],
@@ -39,12 +39,48 @@ describe("Test GraphQL Endpoint", () => {
         const expected = {
             data: {
                 verse: expect.arrayContaining([
-                    expect.objectContaining({
+                    {
                         id: expect.any(Number),
                         content: expect.any(String),
                         title: expect.any(String),
-                    }),
+                    },
                 ]),
+            },
+        };
+
+        expect(res.statusCode).toEqual(200);
+        expect(JSON.parse(res.payload)).toEqual(expected);
+
+        return Promise.resolve();
+    });
+
+    it("Queries Specific Verse", async () => {
+        const payload = gql.query({
+            operation: "verse",
+            variables: {
+                id: 1,
+            },
+            fields: ["id", "title", "content"],
+        });
+
+        const res = await app2.inject({
+            method: "POST",
+            url: "/graphql",
+            headers: {
+                Authorization: process.env.SERVER_AUTHKEY,
+            },
+            payload,
+        });
+
+        const expected = {
+            data: {
+                verse: [
+                    {
+                        id: expect.any(Number),
+                        content: expect.any(String),
+                        title: expect.any(String),
+                    },
+                ],
             },
         };
 
