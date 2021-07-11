@@ -1,13 +1,14 @@
-const buildServer = require("../dist/server.js").default;
-const fastify = require("fastify")();
-const prisma = require("../dist/schema/PrismaClient").default;
-require("dotenv").config();
+import buildServer from "../src/server";
+import fastify, { FastifyInstance } from "fastify";
+import prisma from "../src/schema/PrismaClient";
+import dotenv from "dotenv";
+dotenv.config();
 
-let app;
+let app: FastifyInstance;
 
 describe("Test /verse", () => {
     beforeAll(async () => {
-        app = await buildServer(fastify, { prisma });
+        app = await buildServer(fastify(), { prisma });
         await app.listen(8080, "0.0.0.0");
         return Promise.resolve();
     });
@@ -61,6 +62,7 @@ describe("Test /verse", () => {
             expect(res.statusCode).toEqual(200);
             expect(JSON.parse(res.payload)).toEqual(expected || null);
         }
+
         return Promise.resolve();
     });
 });
