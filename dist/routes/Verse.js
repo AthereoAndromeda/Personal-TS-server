@@ -19,10 +19,10 @@ const route = (app, opts, next) => {
     // Returns verse with matching id
     app.get("/:id", async (req, res) => {
         try {
-            const params = req.params;
-            const parsedParam = parseInt(params.id);
+            const parsedParam = parseInt(req.params.id);
             if (isNaN(parsedParam)) {
-                res.status(400).send("400 Bad Request: Parameter must be a Number!");
+                const errMsg = "400 Bad Request: Parameter must be a Number!";
+                res.status(400).send(errMsg);
                 return;
             }
             const data = await PrismaClient_1.default.verse.findFirst({
