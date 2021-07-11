@@ -41,17 +41,20 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     
-    - name: Install Dependencies
+    - name: Install dependencies
       run: npm ci
     
-    - name: Push schema to databse
+    - name: Push schema to database
       run: npx prisma db push
       
-    - name: Seed the Database
+    - name: Seed postgres database
       run: npx prisma db seed --preview-feature
     
-    - run: npm run build --if-present
-    - run: npm test
+    - name: Build app
+      run: npm run build --if-present
+    
+    - name: Test app
+      run: npm test
     
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/data?schema=public
