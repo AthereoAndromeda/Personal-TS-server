@@ -44,8 +44,8 @@ jobs:
     - name: Install Dependencies
       run: npm ci
     
-    - name: Generate the Prisma Client
-      run: npx prisma generate
+    - name: Push schema to databse
+      run: npx prisma db push
       
     - name: Seed the Database
       run: npx prisma db seed --preview-feature
