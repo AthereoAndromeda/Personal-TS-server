@@ -1,20 +1,25 @@
-import { FastifyPluginCallback } from "fastify";
+import { FastifyPluginCallback, FastifyRequest } from "fastify";
 import prisma from "../schema/PrismaClient";
 import { Route } from "typings";
 
-interface Query {
+interface Querystring {
     id?: string;
     title?: string;
     content?: string;
 }
 
 interface Params {
-    id?: string;
+    id: string;
+}
+
+interface ReqInterface extends FastifyRequest {
+    Querystring: Querystring;
+    Params: Params;
 }
 
 const route: FastifyPluginCallback = (app, opts, next) => {
     // Returns all verses
-    app.get("/", async (req, res) => {
+    app.get<ReqInterface>("/", async (req, res) => {
         try {
             const data = await prisma.verse.findMany();
 
@@ -26,15 +31,13 @@ const route: FastifyPluginCallback = (app, opts, next) => {
     });
 
     // Returns verse with matching id
-    app.get("/:id", async (req, res) => {
+    app.get<ReqInterface>("/:id", async (req, res) => {
         try {
-            const params = req.params as Params;
-            const parsedParam = parseInt(params.id as string);
+            const parsedParam = parseInt(req.params.id);
 
             if (isNaN(parsedParam)) {
-                res.status(400).send(
-                    "400 Bad Request: Parameter must be a Number!"
-                );
+                const errMsg = "400 Bad Request: Parameter must be a Number!";
+                res.status(400).send(errMsg);
                 return;
             }
 
