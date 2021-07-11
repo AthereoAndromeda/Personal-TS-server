@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { Verse } from "src/schema/model";
+import { Verse } from "../src/schema/model";
 
 const prisma = new PrismaClient();
 
