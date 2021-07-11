@@ -1,8 +1,6 @@
 const buildServer = require("../dist/server.js").default;
 const fastify = require("fastify")();
 const prisma = require("../dist/schema/PrismaClient").default;
-const axios = require("axios");
-const gql = require("gql-query-builder");
 require("dotenv").config();
 
 let app;
@@ -25,6 +23,9 @@ describe("Test /verse", () => {
         const res = await app.inject({
             method: "GET",
             url: "/verse",
+            headers: {
+                Authorization: process.env.SERVER_AUTHKEY,
+            },
         });
 
         const expected = expect.arrayContaining([
@@ -42,53 +43,24 @@ describe("Test /verse", () => {
     });
 
     it("Get specific verses", async () => {
-        const res = await app.inject({
-            method: "GET",
-            url: "/verse/1",
-        });
+        for (let i = 0; i < 10; i++) {
+            const res = await app.inject({
+                method: "GET",
+                url: `/verse/${1}`,
+                headers: {
+                    Authorization: process.env.SERVER_AUTHKEY,
+                },
+            });
 
-        const expected = expect.objectContaining({
-            id: expect.any(Number),
-            content: expect.any(String),
-            title: expect.any(String),
-        });
+            const expected = expect.objectContaining({
+                id: expect.any(Number),
+                content: expect.any(String),
+                title: expect.any(String),
+            });
 
-        expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(expected);
-        return Promise.resolve();
-    });
-
-    it("GraphQL Verse", async () => {
-        const payload = gql.query({
-            operation: "verse",
-            fields: ["id", "title", "content"],
-        });
-
-        console.log(payload);
-
-        const res = await app.inject({
-            method: "POST",
-            url: "/graphql",
-            payload,
-        });
-
-        const expected = {
-            data: {
-                verse: expect.arrayContaining([
-                    expect.objectContaining({
-                        id: expect.any(Number),
-                        content: expect.any(String),
-                        title: expect.any(String),
-                    }),
-                ]),
-            },
-        };
-
-        console.log(res.payload);
-
-        expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(expected);
-
+            expect(res.statusCode).toEqual(200);
+            expect(JSON.parse(res.payload)).toEqual(expected || null);
+        }
         return Promise.resolve();
     });
 });
