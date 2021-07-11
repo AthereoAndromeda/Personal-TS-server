@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyLoggerInstance } from "fastify";
-import fs from "fs";
+import fsp from "fs/promises";
 import path from "path";
 import gqlSchema from "./graphql";
 import fastifyCors from "fastify-cors";
@@ -9,6 +9,7 @@ import { checkNodeEnv } from "./utils";
 import { PrismaClient } from "@prisma/client";
 import fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import { IncomingMessage, Server, ServerResponse } from "http";
+import middiePlugin from "middie";
 
 interface BuildServerOptions {
     prisma: PrismaClient;
@@ -24,6 +25,8 @@ async function registerPlugins(app: FastifyInstance, opts: BuildServerOptions) {
         graphiql: "playground",
         context: () => ctx,
     });
+
+    await app.register(middiePlugin);
 
     app.register(fastifyGracefulShutdown);
 
@@ -44,7 +47,7 @@ async function registerRoutes(app: FastifyInstance) {
     // Checks for file that ends in `.ts` or `.js`
     const validFileRegex = /\.js$|\.ts$/;
 
-    const FilesInRoutes = await fs.promises.readdir(
+    const FilesInRoutes = await fsp.readdir(
         path.resolve(__dirname, "./routes/")
     );
 
@@ -59,13 +62,11 @@ async function registerRoutes(app: FastifyInstance) {
     }
 }
 
-type BuildReturn = Promise<
-    FastifyInstance<
-        Server,
-        IncomingMessage,
-        ServerResponse,
-        FastifyLoggerInstance
-    >
+type BuildReturn = FastifyInstance<
+    Server,
+    IncomingMessage,
+    ServerResponse,
+    FastifyLoggerInstance
 >;
 
 /**
@@ -77,11 +78,21 @@ type BuildReturn = Promise<
 export default async function buildServer(
     app: FastifyInstance,
     opts: BuildServerOptions
-): BuildReturn {
+): Promise<BuildReturn> {
     try {
         await opts.prisma.$connect();
         await registerPlugins(app, opts);
         await registerRoutes(app);
+
+        // TODO move somewhere else
+        app.addHook("onRequest", (req, res, done) => {
+            if (req.headers.authorization !== process.env.SERVER_AUTHKEY) {
+                res.status(401).send("401 Unauthorized: Provide API Key");
+                return;
+            }
+
+            done();
+        });
 
         return app;
     } catch (err) {
