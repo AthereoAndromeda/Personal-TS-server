@@ -23,7 +23,7 @@ describe("Test /verse", () => {
             method: "GET",
             url: "/verse",
             headers: {
-                Authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTHKEY,
             },
         });
 
@@ -47,7 +47,7 @@ describe("Test /verse", () => {
                 method: "GET",
                 url: `/verse/${1}`,
                 headers: {
-                    Authorization: process.env.SERVER_AUTHKEY,
+                    authorization: process.env.SERVER_AUTHKEY,
                 },
             });
 
@@ -60,6 +60,30 @@ describe("Test /verse", () => {
             expect(res.statusCode).toEqual(200);
             expect(JSON.parse(res.payload)).toEqual(expected || null);
         }
+
+        return Promise.resolve();
+    });
+
+    it("Should fail auth", async () => {
+        const res = await app.inject({
+            method: "GET",
+            url: "/verse",
+        });
+
+        expect(res.statusCode).toEqual(401);
+        return Promise.resolve();
+    });
+
+    it.skip("POST verse", async () => {
+        const res = await app.inject({
+            method: "POST",
+            url: "/verse/2",
+            headers: {
+                authorization: process.env.SERVER_AUTHKEY,
+            },
+        });
+
+        expect(res.statusCode).toEqual(200);
 
         return Promise.resolve();
     });
