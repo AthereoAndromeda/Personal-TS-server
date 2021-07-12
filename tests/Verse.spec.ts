@@ -9,14 +9,14 @@ describe("Test /verse", () => {
         app = await buildServer(fastify(), { prisma });
         await app.listen(8069, "0.0.0.0");
         return Promise.resolve();
-    });
+    }, 300000);
 
     afterAll(async () => {
         await app.close();
         await prisma.$disconnect();
 
         return Promise.resolve();
-    });
+    }, 300000);
 
     it("Get all Verses", async () => {
         const res = await app.inject({

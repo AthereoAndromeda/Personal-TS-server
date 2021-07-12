@@ -10,7 +10,7 @@ describe("Test /graphql Endpoint", () => {
         app2 = await buildServer(fastify(), { prisma });
         await app2.listen(8083, "0.0.0.0");
         return Promise.resolve();
-    });
+    }, 300000);
 
     // Stop Server and disconnect DB
     afterAll(async () => {
@@ -18,7 +18,7 @@ describe("Test /graphql Endpoint", () => {
         await prisma.$disconnect();
 
         return Promise.resolve();
-    });
+    }, 300000);
 
     it("Queries All Verses", async () => {
         const payload = gql.query({
