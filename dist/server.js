@@ -28,28 +28,31 @@ const graphql_1 = __importDefault(require("./graphql"));
 const fastify_cors_1 = __importDefault(require("fastify-cors"));
 const mercurius_1 = __importDefault(require("mercurius"));
 const utils_1 = require("./utils");
-const fastify_graceful_shutdown_1 = __importDefault(require("fastify-graceful-shutdown"));
-const middie_1 = __importDefault(require("middie"));
+// import middiePlugin from "middie";
 const fastify_blipp_1 = __importDefault(require("fastify-blipp"));
-async function registerPlugins(app) {
+const fastify_helmet_1 = __importDefault(require("fastify-helmet"));
+function registerPlugins(app) {
     const ctx = {
         db: app.db,
     };
+    // app.register(fastifyGracefulShutdown);
     app.register(fastify_blipp_1.default);
-    await app.register(middie_1.default);
-    await app.register(mercurius_1.default, {
+    app.register(fastify_helmet_1.default);
+    // app.register(middiePlugin);
+    app.register(mercurius_1.default, {
         schema: graphql_1.default,
         graphiql: "playground",
         context: () => ctx,
     });
-    app.register(fastify_graceful_shutdown_1.default);
-    await app.register(fastify_cors_1.default, {
+    app.register(fastify_cors_1.default, {
         origin: "*",
     });
     if (utils_1.checkNodeEnv("development")) {
-        const Altair = (await Promise.resolve().then(() => __importStar(require("altair-fastify-plugin")))).default;
-        app.register(Altair, {
-            path: "/altair",
+        Promise.resolve().then(() => __importStar(require("altair-fastify-plugin"))).then(data => {
+            const Altair = data.default;
+            app.register(Altair, {
+                path: "/altair",
+            });
         });
     }
 }
@@ -74,7 +77,7 @@ async function registerRoutes(app) {
 async function buildServer(app, opts) {
     try {
         app.decorate("db", opts.prisma); // 3
-        await registerPlugins(app); // 1
+        registerPlugins(app); // 1
         await registerRoutes(app); // 2
         return app;
     }
