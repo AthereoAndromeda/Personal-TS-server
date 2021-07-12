@@ -7,10 +7,10 @@ import mercurius from "mercurius";
 import { Route } from "typings";
 import { checkNodeEnv } from "./utils";
 import { PrismaClient } from "@prisma/client";
-// import fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import { IncomingMessage, Server, ServerResponse } from "http";
 // import middiePlugin from "middie";
 import fastifyBlipp from "fastify-blipp";
+import fastifyHelmet from "fastify-helmet";
 
 interface BuildServerOptions {
     prisma: PrismaClient;
@@ -24,6 +24,8 @@ function registerPlugins(app: FastifyInstance) {
     // app.register(fastifyGracefulShutdown);
 
     app.register(fastifyBlipp);
+
+    app.register(fastifyHelmet);
 
     // app.register(middiePlugin);
 
