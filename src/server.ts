@@ -7,41 +7,43 @@ import mercurius from "mercurius";
 import { Route } from "typings";
 import { checkNodeEnv } from "./utils";
 import { PrismaClient } from "@prisma/client";
-import fastifyGracefulShutdown from "fastify-graceful-shutdown";
+// import fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import { IncomingMessage, Server, ServerResponse } from "http";
-import middiePlugin from "middie";
+// import middiePlugin from "middie";
 import fastifyBlipp from "fastify-blipp";
 
 interface BuildServerOptions {
     prisma: PrismaClient;
 }
 
-async function registerPlugins(app: FastifyInstance) {
+function registerPlugins(app: FastifyInstance) {
     const ctx = {
         db: app.db,
     };
 
+    // app.register(fastifyGracefulShutdown);
+
     app.register(fastifyBlipp);
 
-    await app.register(middiePlugin);
+    // app.register(middiePlugin);
 
-    await app.register(mercurius, {
+    app.register(mercurius, {
         schema: gqlSchema,
         graphiql: "playground",
         context: () => ctx,
     });
 
-    app.register(fastifyGracefulShutdown);
-
-    await app.register(fastifyCors, {
+    app.register(fastifyCors, {
         origin: "*",
     });
 
     if (checkNodeEnv("development")) {
-        const Altair = (await import("altair-fastify-plugin")).default;
+        import("altair-fastify-plugin").then(data => {
+            const Altair = data.default;
 
-        app.register(Altair, {
-            path: "/altair",
+            app.register(Altair, {
+                path: "/altair",
+            });
         });
     }
 }
@@ -84,7 +86,7 @@ export default async function buildServer(
 ): Promise<BuildReturn> {
     try {
         app.decorate("db", opts.prisma); // 3
-        await registerPlugins(app); // 1
+        registerPlugins(app); // 1
         await registerRoutes(app); // 2
 
         return app;
