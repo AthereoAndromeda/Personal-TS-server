@@ -8,6 +8,9 @@
         "module": "CommonJS",
         "esModuleInterop": true,
         "pretty": true,
+        "typeRoots": [
+            "typings"
+        ]
     },
     "exclude": [
         "prisma",
