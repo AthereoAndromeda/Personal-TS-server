@@ -21,7 +21,7 @@ async function registerPlugins(app: FastifyInstance) {
         db: app.db,
     };
 
-    await app.register(fastifyBlipp);
+    app.register(fastifyBlipp);
 
     await app.register(middiePlugin);
 
