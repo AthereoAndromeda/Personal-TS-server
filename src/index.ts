@@ -20,7 +20,9 @@ async function start(app: FastifyInstance) {
 
         const server = await buildServer(app, { prisma });
 
+        await server.db.$connect();
         await server.listen(PORT, "0.0.0.0");
+        server.blipp();
     } catch (error) {
         app.log.error(error);
         app.close();
