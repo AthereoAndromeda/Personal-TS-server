@@ -1,29 +1,29 @@
 import { Static, Type } from "@sinclair/typebox";
 import {
+    DoneFuncWithErrOrRes,
     FastifyPluginCallback,
-    FastifySchema,
-    preHandlerHookHandler,
-    RouteShorthandOptions,
+    FastifyReply,
+    FastifyRequest,
 } from "fastify";
-import { IncomingMessage, Server, ServerResponse } from "http";
 import { Route } from "typings";
 
-interface Querystring {
-    id?: string;
-    title?: string;
-    content?: string;
-}
-
-interface Params {
-    id: string;
-}
-
 interface ReqInterface {
-    Querystring: Querystring;
-    Params: Params;
+    Querystring: {
+        id?: string;
+        title?: string;
+        content?: string;
+    };
+
+    // Headers: {}
+
+    Params: {
+        id: string;
+    };
+
     Body: VerseType;
-    Response: VerseType;
 }
+
+type VerseType = Static<typeof Verse>;
 
 const Verse = Type.Object({
     id: Type.Number(),
@@ -31,35 +31,21 @@ const Verse = Type.Object({
     content: Type.String(),
 });
 
-type CustomOpts = RouteShorthandOptions<
-    Server,
-    IncomingMessage,
-    ServerResponse,
-    ReqInterface,
-    unknown,
-    FastifySchema
->;
+function parseIdParam(
+    req: FastifyRequest<ReqInterface>,
+    res: FastifyReply,
+    done: DoneFuncWithErrOrRes
+) {
+    const parsedParam = parseInt(req.params.id);
 
-const postOpts: CustomOpts = {
-    schema: {
-        body: Verse,
-        response: {
-            200: Verse,
-        },
-    },
-    preHandler: (req, res, done) => {
-        const parsedParam = parseInt(req.params.id);
-
-        if (isNaN(parsedParam)) {
-            const errMsg = "400 Bad Request: Parameter must be a Number!";
-            res.status(400).header("content-type", "text/plain").send(errMsg);
-            return;
-        }
+    if (isNaN(parsedParam)) {
+        const errMsg = "400 Bad Request: Parameter must be a Number!";
+        res.status(400).header("content-type", "text/plain").send(errMsg);
         done();
-    },
-};
+    }
 
-type VerseType = Static<typeof Verse>;
+    done();
+}
 
 const route: FastifyPluginCallback = (app, opts, next) => {
     app.addHook("preValidation", (req, res, done) => {
@@ -84,59 +70,76 @@ const route: FastifyPluginCallback = (app, opts, next) => {
     });
 
     // Returns verse with matching id
-    app.get<ReqInterface>("/:id", async (req, res) => {
-        try {
-            const parsedParam = parseInt(req.params.id);
+    app.get<ReqInterface>(
+        "/:id",
+        { preHandler: parseIdParam },
+        async (req, res) => {
+            try {
+                const parsedParam = parseInt(req.params.id);
 
-            if (isNaN(parsedParam)) {
-                const errMsg = "400 Bad Request: Parameter must be a Number!";
+                if (isNaN(parsedParam)) {
+                    const errMsg =
+                        "400 Bad Request: Parameter must be a Number!";
 
-                res.status(400)
-                    .header("content-type", "text/plain")
-                    .send(errMsg);
+                    res.status(400)
+                        .header("content-type", "text/plain")
+                        .send(errMsg);
 
-                return;
+                    return;
+                }
+
+                const data = await app.db.verse.findFirst({
+                    where: {
+                        id: parsedParam,
+                    },
+                });
+
+                res.status(200).send(data);
+            } catch (error) {
+                app.log.error(error);
+                res.status(500).send("500 Internal Server Error");
             }
-
-            const data = await app.db.verse.findFirst({
-                where: {
-                    id: parsedParam,
-                },
-            });
-
-            res.status(200).send(data);
-        } catch (error) {
-            app.log.error(error);
-            res.status(500).send("500 Internal Server Error");
         }
-    });
+    );
 
-    app.post<ReqInterface>("/", postOpts, async (req, res) => {
-        try {
-            const parsedParam = parseInt(req.params.id);
+    app.post<ReqInterface>(
+        "/",
+        {
+            schema: {
+                body: Verse,
+                response: {
+                    200: Verse,
+                },
+            },
+        },
+        async (req, res) => {
+            try {
+                const parsedParam = parseInt(req.params.id);
 
-            if (isNaN(parsedParam) || !req.params.id) {
-                const errMsg = "400 Bad Request: Parameter must be a Number!";
+                if (isNaN(parsedParam) || !req.params.id) {
+                    const errMsg =
+                        "400 Bad Request: Parameter must be a Number!";
 
-                res.status(400)
-                    .header("content-type", "text/plain")
-                    .send(errMsg);
+                    res.status(400)
+                        .header("content-type", "text/plain")
+                        .send(errMsg);
 
-                return;
+                    return;
+                }
+                const data = await app.db.verse.create({
+                    data: {
+                        id: req.body.id,
+                        title: req.body.title,
+                        content: req.body.content,
+                    },
+                });
+
+                res.status(200).send(data);
+            } catch (error) {
+                res.status(500).send(error);
             }
-            const data = await app.db.verse.create({
-                data: {
-                    id: req.body.id,
-                    title: req.body.title,
-                    content: req.body.content,
-                },
-            });
-
-            res.status(200).send(data);
-        } catch (error) {
-            res.status(500).send(error);
         }
-    });
+    );
 
     next();
 };
