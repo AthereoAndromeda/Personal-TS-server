@@ -3,6 +3,7 @@
   "version": "1.0.2",
   "description": "Server for CalNatSci-TS",
   "main": "dist/index.js",
+  "private": true,
   "scripts": {
     "dev": "node -r dotenv/config .",
     "ts-dev": "ts-node-dev -r dotenv/config src/index.ts",
