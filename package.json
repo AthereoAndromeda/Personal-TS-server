@@ -1,6 +1,6 @@
 {
   "name": "calnatsci-ts-server",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Server for CalNatSci-TS",
   "main": "dist/index.js",
   "private": true,
