@@ -3,9 +3,8 @@ import fastify, { FastifyInstance } from "fastify";
 import prisma from "../src/schema/PrismaClient";
 import * as gql from "gql-query-builder";
 
-let app2: FastifyInstance;
-
 describe("Test /graphql Endpoint", () => {
+    let app2: FastifyInstance;
     // Start Server and connect to DB
     beforeAll(async () => {
         app2 = await buildServer(fastify(), { prisma });

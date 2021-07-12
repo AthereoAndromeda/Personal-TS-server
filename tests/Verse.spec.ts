@@ -2,9 +2,9 @@ import buildServer from "../src/server";
 import fastify, { FastifyInstance } from "fastify";
 import prisma from "../src/schema/PrismaClient";
 
-let app: FastifyInstance;
-
 describe("Test /verse", () => {
+    let app: FastifyInstance;
+
     beforeAll(async () => {
         app = await buildServer(fastify(), { prisma });
         await app.listen(8069, "0.0.0.0");

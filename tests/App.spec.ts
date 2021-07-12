@@ -2,10 +2,10 @@ import buildServer from "../src/server";
 import fastify, { FastifyInstance } from "fastify";
 import prisma from "../src/schema/PrismaClient";
 
-let app1: FastifyInstance;
-let prisma1 = prisma;
-
 describe("Test Authorization and Response", () => {
+    let app1: FastifyInstance;
+    let prisma1 = prisma;
+
     // Start Server and connect to DB
     beforeAll(async () => {
         app1 = await buildServer(fastify(), { prisma: prisma1 });
