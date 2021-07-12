@@ -83,10 +83,9 @@ export default async function buildServer(
     opts: BuildServerOptions
 ): Promise<BuildReturn> {
     try {
-        app.decorate("db", opts.prisma);
-
         await registerPlugins(app);
         await registerRoutes(app);
+        app.decorate("db", opts.prisma);
 
         // TODO move somewhere else
         // app.addHook("onRequest", (req, res, done) => {
