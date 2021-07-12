@@ -5,7 +5,7 @@ import * as gql from "gql-query-builder";
 
 let app2: FastifyInstance;
 
-describe("Test GraphQL Endpoint", () => {
+describe("Test /graphql Endpoint", () => {
     // Start Server and connect to DB
     beforeAll(async () => {
         app2 = await buildServer(fastify(), { prisma });
@@ -31,7 +31,7 @@ describe("Test GraphQL Endpoint", () => {
             method: "POST",
             url: "/graphql",
             headers: {
-                Authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTHKEY,
             },
             payload,
         });
@@ -67,7 +67,7 @@ describe("Test GraphQL Endpoint", () => {
             method: "POST",
             url: "/graphql",
             headers: {
-                Authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTHKEY,
             },
             payload,
         });
