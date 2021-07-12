@@ -114,18 +114,6 @@ const route: FastifyPluginCallback = (app, opts, next) => {
         },
         async (req, res) => {
             try {
-                const parsedParam = parseInt(req.params.id);
-
-                if (isNaN(parsedParam) || !req.params.id) {
-                    const errMsg =
-                        "400 Bad Request: Parameter must be a Number!";
-
-                    res.status(400)
-                        .header("content-type", "text/plain")
-                        .send(errMsg);
-
-                    return;
-                }
                 const data = await app.db.verse.create({
                     data: {
                         id: req.body.id,
