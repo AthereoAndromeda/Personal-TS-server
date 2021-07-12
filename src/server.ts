@@ -10,23 +10,26 @@ import { PrismaClient } from "@prisma/client";
 import fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import { IncomingMessage, Server, ServerResponse } from "http";
 import middiePlugin from "middie";
+import fastifyBlipp from "fastify-blipp";
 
 interface BuildServerOptions {
     prisma: PrismaClient;
 }
 
-async function registerPlugins(app: FastifyInstance, opts: BuildServerOptions) {
+async function registerPlugins(app: FastifyInstance) {
     const ctx = {
-        db: opts.prisma,
+        db: app.db,
     };
+
+    await app.register(fastifyBlipp);
+
+    await app.register(middiePlugin);
 
     await app.register(mercurius, {
         schema: gqlSchema,
         graphiql: "playground",
         context: () => ctx,
     });
-
-    await app.register(middiePlugin);
 
     app.register(fastifyGracefulShutdown);
 
@@ -37,7 +40,7 @@ async function registerPlugins(app: FastifyInstance, opts: BuildServerOptions) {
     if (checkNodeEnv("development")) {
         const Altair = (await import("altair-fastify-plugin")).default;
 
-        await app.register(Altair, {
+        app.register(Altair, {
             path: "/altair",
         });
     }
@@ -57,7 +60,7 @@ async function registerRoutes(app: FastifyInstance) {
         const routeImport = await import(`./routes/${routeFile}`);
         const { path, route }: Route = routeImport.default;
 
-        await app.register(route, { prefix: path });
+        app.register(route, { prefix: path });
         app.log.info(`[${routeFile}]: ${path}`);
     }
 }
@@ -80,19 +83,20 @@ export default async function buildServer(
     opts: BuildServerOptions
 ): Promise<BuildReturn> {
     try {
-        await opts.prisma.$connect();
-        await registerPlugins(app, opts);
+        app.decorate("db", opts.prisma);
+
+        await registerPlugins(app);
         await registerRoutes(app);
 
         // TODO move somewhere else
-        app.addHook("onRequest", (req, res, done) => {
-            if (req.headers.authorization !== process.env.SERVER_AUTHKEY) {
-                res.status(401).send("401 Unauthorized: Provide API Key");
-                return;
-            }
+        // app.addHook("onRequest", (req, res, done) => {
+        //     if (req.headers.authorization !== process.env.SERVER_AUTHKEY) {
+        //         res.status(401).send("401 Unauthorized: Provide API Key");
+        //         return;
+        //     }
 
-            done();
-        });
+        //     done();
+        // });
 
         return app;
     } catch (err) {
