@@ -83,19 +83,9 @@ export default async function buildServer(
     opts: BuildServerOptions
 ): Promise<BuildReturn> {
     try {
-        await registerPlugins(app);
-        await registerRoutes(app);
-        app.decorate("db", opts.prisma);
-
-        // TODO move somewhere else
-        // app.addHook("onRequest", (req, res, done) => {
-        //     if (req.headers.authorization !== process.env.SERVER_AUTHKEY) {
-        //         res.status(401).send("401 Unauthorized: Provide API Key");
-        //         return;
-        //     }
-
-        //     done();
-        // });
+        app.decorate("db", opts.prisma); // 3
+        await registerPlugins(app); // 1
+        await registerRoutes(app); // 2
 
         return app;
     } catch (err) {
