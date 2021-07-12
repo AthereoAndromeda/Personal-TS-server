@@ -7,7 +7,7 @@ let app: FastifyInstance;
 describe("Test /verse", () => {
     beforeAll(async () => {
         app = await buildServer(fastify(), { prisma });
-        await app.listen(8080, "0.0.0.0");
+        await app.listen(8069, "0.0.0.0");
         return Promise.resolve();
     });
 
