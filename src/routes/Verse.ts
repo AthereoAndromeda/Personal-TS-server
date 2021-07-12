@@ -1,5 +1,9 @@
-import { FastifyPluginCallback, FastifyRequest } from "fastify";
-import prisma from "../schema/PrismaClient";
+import {
+    FastifyPluginCallback,
+    FastifyRequest,
+    onRequestHookHandler,
+    RouteShorthandOptions,
+} from "fastify";
 import { Route } from "typings";
 
 interface Querystring {
@@ -17,11 +21,24 @@ interface ReqInterface extends FastifyRequest {
     Params: Params;
 }
 
+const cb: onRequestHookHandler = (req, res, done) => {
+    if (req.headers.authorization !== process.env.SERVER_AUTHKEY) {
+        res.status(401).send("401 Unauthorized: Provide API Key");
+        done();
+    }
+
+    done();
+};
+
+const opt: RouteShorthandOptions = {
+    onRequest: cb,
+};
+
 const route: FastifyPluginCallback = (app, opts, next) => {
     // Returns all verses
-    app.get<ReqInterface>("/", async (req, res) => {
+    app.get<ReqInterface>("/", opt, async (req, res) => {
         try {
-            const data = await prisma.verse.findMany();
+            const data = await app.db.verse.findMany();
 
             res.status(200).send(data);
         } catch (error) {
@@ -41,7 +58,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 return;
             }
 
-            const data = await prisma.verse.findFirst({
+            const data = await app.db.verse.findFirst({
                 where: {
                     id: parsedParam,
                 },
