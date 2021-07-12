@@ -48,7 +48,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
     });
 
     // Returns verse with matching id
-    app.get<ReqInterface>("/:id", async (req, res) => {
+    app.get<ReqInterface>("/:id", opt, async (req, res) => {
         try {
             const parsedParam = parseInt(req.params.id);
 
