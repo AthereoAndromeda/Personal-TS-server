@@ -31,6 +31,8 @@ const Verse = Type.Object({
     content: Type.String(),
 });
 
+console.log(Verse);
+
 function parseIdParam(
     req: FastifyRequest<ReqInterface>,
     res: FastifyReply,
@@ -153,6 +155,33 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                         id,
                         title,
                         content,
+                    },
+                });
+
+                res.status(200).send(data);
+            } catch (error) {
+                res.status(500).send(error);
+            }
+        }
+    );
+
+    app.delete<ReqInterface>(
+        "/",
+        {
+            schema: {
+                body: Type.Object({ id: Type.Number() }),
+                response: {
+                    200: Verse,
+                },
+            },
+        },
+        async (req, res) => {
+            try {
+                const { id } = req.body;
+
+                const data = await app.db.verse.delete({
+                    where: {
+                        id,
                     },
                 });
 
