@@ -129,6 +129,35 @@ const route: FastifyPluginCallback = (app, opts, next) => {
         }
     );
 
+    app.put<ReqInterface>(
+        "/",
+        {
+            schema: {
+                body: Verse,
+                response: {
+                    200: Verse,
+                    400: { type: "string" },
+                },
+            },
+        },
+        async (req, res) => {
+            const { id, title, content } = req.body;
+
+            const data = await app.db.verse.update({
+                where: {
+                    id,
+                },
+                data: {
+                    id,
+                    title,
+                    content,
+                },
+            });
+
+            res.status(200).send(data);
+        }
+    );
+
     next();
 };
 
