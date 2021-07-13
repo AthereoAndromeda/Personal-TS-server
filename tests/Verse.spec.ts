@@ -47,32 +47,48 @@ describe("Test /verse Endpoint", () => {
     });
 
     it("POST /verse", async () => {
+        const payload = {
+            id: 69,
+            title: "nice",
+            content: "i know very mature",
+        };
         const res = await app.inject({
             method: "POST",
             url: "/verse",
             headers: {
                 authorization: process.env.SERVER_AUTHKEY,
             },
-            payload: {
-                id: 69,
-                title: "nice",
-                content: "i know very mature",
-            },
+            payload,
         });
 
-        const expected = {
-            id: 69,
-            title: "nice",
-            content: "i know very mature",
-        };
-
         expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(expected);
+        expect(JSON.parse(res.payload)).toEqual(payload);
 
         return Promise.resolve();
     });
 
-    it.todo("PUT /verse");
+    it("PUT /verse", async () => {
+        const payload = {
+            id: 2,
+            title: "PUT Test",
+            content: "Content",
+        };
+
+        const res = await app.inject({
+            method: "PUT",
+            url: "/verse",
+            headers: {
+                authorization: process.env.SERVER_AUTHKEY,
+            },
+            payload,
+        });
+
+        expect(res.statusCode).toEqual(200);
+        expect(JSON.parse(res.payload)).toEqual(payload);
+
+        return Promise.resolve();
+    });
+
     it.todo("PATCH /verse");
     it.todo("DELETE /verse");
 
