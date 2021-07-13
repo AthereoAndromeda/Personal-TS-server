@@ -6,18 +6,35 @@ describe("Test /verse Endpoint", () => {
     let app: FastifyInstance;
 
     beforeAll(async () => {
+        const { id, content, title } = {
+            id: 70,
+            content: "asaas",
+            title: "yeet",
+        };
+
         app = await buildServer(fastify(), { prisma });
+        await prisma.verse.upsert({
+            where: {
+                id,
+            },
+            create: {
+                id,
+                content,
+                title,
+            },
+            update: {
+                id,
+                content,
+                title,
+            },
+        });
+
         await app.listen(8069, "0.0.0.0");
         return Promise.resolve();
     }, 300000);
 
     afterAll(async () => {
         await app.close();
-        await prisma.verse.delete({
-            where: {
-                id: 69,
-            },
-        });
         await prisma.$disconnect();
 
         return Promise.resolve();
@@ -90,7 +107,28 @@ describe("Test /verse Endpoint", () => {
     });
 
     it.todo("PATCH /verse");
-    it.todo("DELETE /verse");
+
+    it("DELETE /verse", async () => {
+        const payload = {
+            id: 70,
+        };
+
+        const res = await app.inject({
+            method: "DELETE",
+            url: "/verse",
+            headers: {
+                authorization: process.env.SERVER_AUTHKEY,
+            },
+            payload,
+        });
+
+        console.log(res.payload);
+
+        expect(res.statusCode).toEqual(200);
+        // expect(JSON.parse(res.payload)).toEqual(payload);
+
+        return Promise.resolve();
+    });
 
     it("GET Should Fail Authentication", async () => {
         const res = await app.inject({
