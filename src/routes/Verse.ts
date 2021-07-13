@@ -31,8 +31,6 @@ const Verse = Type.Object({
     content: Type.String(),
 });
 
-console.log(Verse);
-
 function parseIdParam(
     req: FastifyRequest<ReqInterface>,
     res: FastifyReply,
