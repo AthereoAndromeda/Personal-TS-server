@@ -2,7 +2,7 @@ import buildServer from "../src/server";
 import fastify, { FastifyInstance } from "fastify";
 import prisma from "../src/schema/PrismaClient";
 
-describe("Test /verse Endpoint", () => {
+describe("Test /verses Endpoint", () => {
     let app: FastifyInstance;
 
     beforeAll(async () => {
@@ -47,10 +47,10 @@ describe("Test /verse Endpoint", () => {
         return Promise.resolve();
     }, 300000);
 
-    it("GET /verse", async () => {
+    it("GET /verses", async () => {
         const res = await app.inject({
             method: "GET",
-            url: "/verse",
+            url: "/verses",
             headers: {
                 authorization: process.env.SERVER_AUTHKEY,
             },
@@ -70,7 +70,7 @@ describe("Test /verse Endpoint", () => {
         return Promise.resolve();
     });
 
-    it("POST /verse", async () => {
+    it("POST /verses", async () => {
         const payload = {
             id: 69,
             title: "nice",
@@ -78,7 +78,7 @@ describe("Test /verse Endpoint", () => {
         };
         const res = await app.inject({
             method: "POST",
-            url: "/verse",
+            url: "/verses",
             headers: {
                 authorization: process.env.SERVER_AUTHKEY,
             },
@@ -91,7 +91,7 @@ describe("Test /verse Endpoint", () => {
         return Promise.resolve();
     });
 
-    it("PUT /verse", async () => {
+    it("PUT /verses", async () => {
         const payload = {
             id: 2,
             title: "PUT Test",
@@ -100,7 +100,7 @@ describe("Test /verse Endpoint", () => {
 
         const res = await app.inject({
             method: "PUT",
-            url: "/verse",
+            url: "/verses",
             headers: {
                 authorization: process.env.SERVER_AUTHKEY,
             },
@@ -113,16 +113,16 @@ describe("Test /verse Endpoint", () => {
         return Promise.resolve();
     });
 
-    it.todo("PATCH /verse");
+    it.todo("PATCH /verses");
 
-    it("DELETE /verse", async () => {
+    it("DELETE /verses", async () => {
         const payload = {
             id: 70,
         };
 
         const res = await app.inject({
             method: "DELETE",
-            url: "/verse",
+            url: "/verses",
             headers: {
                 authorization: process.env.SERVER_AUTHKEY,
             },
@@ -144,18 +144,18 @@ describe("Test /verse Endpoint", () => {
     it("GET Should Fail Authentication", async () => {
         const res = await app.inject({
             method: "GET",
-            url: "/verse",
+            url: "/verses",
         });
 
         expect(res.statusCode).toEqual(401);
         return Promise.resolve();
     });
 
-    it("GET Iterate over /verses/:id", async () => {
+    it("GET Iterate over /versess/:id", async () => {
         for (let i = 0; i < 10; i++) {
             const res = await app.inject({
                 method: "GET",
-                url: `/verse/${1}`,
+                url: `/verses/${1}`,
                 headers: {
                     authorization: process.env.SERVER_AUTHKEY,
                 },

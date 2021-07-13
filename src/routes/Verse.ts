@@ -197,6 +197,6 @@ const route: FastifyPluginCallback = (app, opts, next) => {
 };
 
 export default {
-    path: "/verse",
+    path: "/verses",
     route,
 } as Route;
