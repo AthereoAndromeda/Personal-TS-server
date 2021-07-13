@@ -35,6 +35,13 @@ describe("Test /verse Endpoint", () => {
 
     afterAll(async () => {
         await app.close();
+
+        await prisma.verse.delete({
+            where: {
+                id: 69,
+            },
+        });
+
         await prisma.$disconnect();
 
         return Promise.resolve();
@@ -122,10 +129,14 @@ describe("Test /verse Endpoint", () => {
             payload,
         });
 
-        console.log(res.payload);
+        const expected = {
+            id: 70,
+            title: expect.any(String),
+            content: expect.any(String),
+        };
 
         expect(res.statusCode).toEqual(200);
-        // expect(JSON.parse(res.payload)).toEqual(payload);
+        expect(JSON.parse(res.payload)).toEqual(expected);
 
         return Promise.resolve();
     });
