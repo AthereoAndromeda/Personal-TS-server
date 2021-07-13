@@ -114,11 +114,12 @@ const route: FastifyPluginCallback = (app, opts, next) => {
         },
         async (req, res) => {
             try {
+                const { id, title, content } = req.body;
                 const data = await app.db.verse.create({
                     data: {
-                        id: req.body.id,
-                        title: req.body.title,
-                        content: req.body.content,
+                        id,
+                        title,
+                        content,
                     },
                 });
 
@@ -136,25 +137,29 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 body: Verse,
                 response: {
                     200: Verse,
-                    400: { type: "string" },
+                    400: Type.String(),
                 },
             },
         },
         async (req, res) => {
-            const { id, title, content } = req.body;
+            try {
+                const { id, title, content } = req.body;
 
-            const data = await app.db.verse.update({
-                where: {
-                    id,
-                },
-                data: {
-                    id,
-                    title,
-                    content,
-                },
-            });
+                const data = await app.db.verse.update({
+                    where: {
+                        id,
+                    },
+                    data: {
+                        id,
+                        title,
+                        content,
+                    },
+                });
 
-            res.status(200).send(data);
+                res.status(200).send(data);
+            } catch (error) {
+                res.status(500).send(error);
+            }
         }
     );
 
