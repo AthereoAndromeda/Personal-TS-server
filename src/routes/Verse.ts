@@ -127,6 +127,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
 
                 res.status(200).send(data);
             } catch (error) {
+                app.log.error(error);
                 res.status(500).send(error);
             }
         }
@@ -160,6 +161,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
 
                 res.status(200).send(data);
             } catch (error) {
+                app.log.error(error);
                 res.status(500).send(error);
             }
         }
@@ -187,6 +189,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
 
                 res.status(200).send(data);
             } catch (error) {
+                app.log.error(error);
                 res.status(500).send(error);
             }
         }
