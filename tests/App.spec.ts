@@ -4,7 +4,7 @@ import prisma from "../src/schema/PrismaClient";
 
 describe("Test Authorization and Response", () => {
     let app1: FastifyInstance;
-    let prisma1 = prisma;
+    const prisma1 = prisma;
 
     // Start Server and connect to DB
     beforeAll(async () => {
@@ -36,7 +36,7 @@ describe("Test Authorization and Response", () => {
     it("Should Return 401 Unauthorized: Incorrect Auth Key", async () => {
         const res = await app1.inject({
             method: "GET",
-            url: "/verse",
+            url: "/verses",
             headers: {
                 authorization: "incorrectAuthorizationKey",
             },
@@ -51,7 +51,7 @@ describe("Test Authorization and Response", () => {
     it("Should Return 401 Unauthorized: No Auth Key", async () => {
         const res = await app1.inject({
             method: "GET",
-            url: "/verse",
+            url: "/verses",
         });
 
         expect(res.statusCode).toEqual(401);
@@ -63,7 +63,7 @@ describe("Test Authorization and Response", () => {
     it("Should Return 200 Success: Correct Auth Key", async () => {
         const res = await app1.inject({
             method: "GET",
-            url: "/verse",
+            url: "/verses",
             headers: {
                 authorization: process.env.SERVER_AUTHKEY,
             },
