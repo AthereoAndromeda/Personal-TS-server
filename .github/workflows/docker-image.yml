@@ -12,7 +12,24 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+
     steps:
     - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install TypeScript compiler
+      run: npm install typescript@`node -p -e "require('./package.json').devDependencies.typescript"`
+
+    - name: Build App
+      run: npm run build
+
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag redstripez08/calnatsci-ts-server:$(date +%s)
+      run: docker build . --file Dockerfile --tag redstripez08/calnatsci-ts:$(date +%s)
