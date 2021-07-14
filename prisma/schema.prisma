@@ -1,17 +1,26 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model EditSnipes {
+  id      Int    @id @default(1)
+  author  String @default("Placeholder Author")
+  content String @default("Placeholder Content")
 }
 
-model Verse {
+model Snipes {
+  id      Int    @id @default(1)
+  author  String @default("Placeholder Author")
+  content String @default("Placeholder Content")
+}
+
+model Verses {
   id      Int    @id @default(autoincrement())
-  title   String
-  content String
+  title   String @default("Placeholder Title")
+  content String @default("Placeholder Content")
 }
