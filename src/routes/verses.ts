@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { Type } from "@sinclair/typebox";
 import {
     DoneFuncWithErrOrRes,
     FastifyPluginCallback,
@@ -6,6 +6,7 @@ import {
     FastifyRequest,
 } from "fastify";
 import { Route } from "typings";
+import { Verse, VerseType } from "../schema/Verse";
 
 interface ReqInterface {
     Querystring: {
@@ -22,14 +23,6 @@ interface ReqInterface {
 
     Body: VerseType;
 }
-
-type VerseType = Static<typeof Verse>;
-
-const Verse = Type.Object({
-    id: Type.Number(),
-    title: Type.String(),
-    content: Type.String(),
-});
 
 function parseIdParam(
     req: FastifyRequest<ReqInterface>,
