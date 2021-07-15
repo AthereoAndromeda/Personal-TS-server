@@ -2,6 +2,35 @@ import buildServer from "../src/server";
 import fastify, { FastifyInstance } from "fastify";
 import prisma from "../src/schema/PrismaClient";
 
+const okObject = {
+    message: () => "Ok",
+    pass: true,
+};
+
+expect.extend({
+    expectedOrNull(received, arg) {
+        if (received === null) {
+            return okObject;
+        } else if (received === arg) {
+            return okObject;
+        } else {
+            return {
+                message: () => `expected ${received} to be ${arg}`,
+                pass: false,
+            };
+        }
+    },
+});
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace jest {
+        interface Matchers<R> {
+            expectedOrNull(a: any): typeof okObject
+        }
+    }
+}
+
 describe("Test /verses Endpoint", () => {
     let app: FastifyInstance;
 
@@ -152,23 +181,23 @@ describe("Test /verses Endpoint", () => {
     });
 
     it("GET Iterate over /verses/:id", async () => {
+        const expected = expect.objectContaining({
+            id: expect.any(Number),
+            content: expect.any(String),
+            title: expect.any(String),
+        });
+
         for (let i = 0; i < 10; i++) {
             const res = await app.inject({
                 method: "GET",
-                url: `/verses/${1}`,
+                url: `/verses/${i}`,
                 headers: {
                     authorization: process.env.SERVER_AUTHKEY,
                 },
             });
 
-            const expected = expect.objectContaining({
-                id: expect.any(Number),
-                content: expect.any(String),
-                title: expect.any(String),
-            });
-
             expect(res.statusCode).toEqual(200);
-            expect(JSON.parse(res.payload)).toEqual(expected || null);
+            expect(JSON.parse(res.payload)).expectedOrNull(expected)
         }
 
         return Promise.resolve();
