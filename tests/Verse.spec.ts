@@ -11,7 +11,7 @@ expect.extend({
     expectedOrNull(received, arg) {
         if (received === null) {
             return okObject;
-        } else if (received === arg) {
+        } else if (received.id) {
             return okObject;
         } else {
             return {
@@ -26,7 +26,7 @@ declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace jest {
         interface Matchers<R> {
-            expectedOrNull(a: any): typeof okObject
+            expectedOrNull(a: any): typeof okObject;
         }
     }
 }
@@ -197,7 +197,7 @@ describe("Test /verses Endpoint", () => {
             });
 
             expect(res.statusCode).toEqual(200);
-            expect(JSON.parse(res.payload)).expectedOrNull(expected)
+            expect(JSON.parse(res.payload)).expectedOrNull(expected);
         }
 
         return Promise.resolve();
