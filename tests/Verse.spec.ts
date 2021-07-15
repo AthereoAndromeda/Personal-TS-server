@@ -151,7 +151,7 @@ describe("Test /verses Endpoint", () => {
         return Promise.resolve();
     });
 
-    it("GET Iterate over /versess/:id", async () => {
+    it("GET Iterate over /verses/:id", async () => {
         for (let i = 0; i < 10; i++) {
             const res = await app.inject({
                 method: "GET",
