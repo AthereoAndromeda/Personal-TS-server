@@ -65,7 +65,7 @@ describe("Test Authorization and Response", () => {
             method: "GET",
             url: "/verses",
             headers: {
-                authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTH,
             },
         });
 

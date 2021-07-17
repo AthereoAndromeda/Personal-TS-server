@@ -81,7 +81,7 @@ describe("Test /verses Endpoint", () => {
             method: "GET",
             url: "/verses",
             headers: {
-                authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTH,
             },
         });
 
@@ -109,7 +109,7 @@ describe("Test /verses Endpoint", () => {
             method: "POST",
             url: "/verses",
             headers: {
-                authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTH,
             },
             payload,
         });
@@ -131,7 +131,7 @@ describe("Test /verses Endpoint", () => {
             method: "PUT",
             url: "/verses",
             headers: {
-                authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTH,
             },
             payload,
         });
@@ -153,7 +153,7 @@ describe("Test /verses Endpoint", () => {
             method: "DELETE",
             url: "/verses",
             headers: {
-                authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTH,
             },
             payload,
         });
@@ -192,7 +192,7 @@ describe("Test /verses Endpoint", () => {
                 method: "GET",
                 url: `/verses/${i}`,
                 headers: {
-                    authorization: process.env.SERVER_AUTHKEY,
+                    authorization: process.env.SERVER_AUTH,
                 },
             });
 

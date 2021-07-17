@@ -30,7 +30,7 @@ describe("Test /graphql Endpoint", () => {
             method: "POST",
             url: "/graphql",
             headers: {
-                authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTH,
             },
             payload,
         });
@@ -66,7 +66,7 @@ describe("Test /graphql Endpoint", () => {
             method: "POST",
             url: "/graphql",
             headers: {
-                authorization: process.env.SERVER_AUTHKEY,
+                authorization: process.env.SERVER_AUTH,
             },
             payload,
         });
