@@ -42,7 +42,7 @@ function parseIdParam(
 
 const route: FastifyPluginCallback = (app, opts, next) => {
     app.addHook("preValidation", (req, res, done) => {
-        if (req.headers.authorization !== process.env.SERVER_AUTHKEY) {
+        if (req.headers.authorization !== process.env.SERVER_AUTH) {
             res.status(401).send("401 Unauthorized: Provide API Key");
             done();
         }
