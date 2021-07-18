@@ -10,11 +10,13 @@
         "pretty": true,
         "typeRoots": [
             "./typings",
-            "./node_modules/@types"
+            "./node_modules/@types",
+            "./node_modules/**/*"
         ]
     },
     "exclude": [
         "prisma",
-        "tests"
+        "tests",
+        "others"
     ]
 }
