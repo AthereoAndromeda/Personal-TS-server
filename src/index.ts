@@ -1,6 +1,5 @@
 import fastify, { FastifyInstance } from "fastify";
 import buildServer from "./server";
-import prisma from "./schema/PrismaClient";
 import { checkNodeEnv } from "./utils";
 
 const app = fastify({
@@ -18,7 +17,7 @@ async function start(app: FastifyInstance) {
         const { PORT } = process.env;
         if (!PORT) throw "Port Not Found";
 
-        const server = await buildServer(app, { prisma });
+        const server = await buildServer(app);
 
         await server.db.$connect();
         await server.listen(PORT, "0.0.0.0");
