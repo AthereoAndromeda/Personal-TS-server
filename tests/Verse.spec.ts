@@ -41,7 +41,7 @@ describe("Test /verses Endpoint", () => {
             title: "yeet",
         };
 
-        app = await buildServer(fastify(), { prisma });
+        app = await buildServer(fastify());
         await prisma.verse.upsert({
             where: {
                 id,
@@ -59,7 +59,7 @@ describe("Test /verses Endpoint", () => {
         });
 
         await app.listen(8069, "0.0.0.0");
-        return Promise.resolve();
+        return;
     }, 300000);
 
     afterAll(async () => {
@@ -73,7 +73,7 @@ describe("Test /verses Endpoint", () => {
 
         await prisma.$disconnect();
 
-        return Promise.resolve();
+        return;
     }, 300000);
 
     it("GET /verses", async () => {
@@ -96,7 +96,7 @@ describe("Test /verses Endpoint", () => {
         expect(res.statusCode).toEqual(200);
         expect(JSON.parse(res.payload)).toEqual(expected);
 
-        return Promise.resolve();
+        return;
     });
 
     it("POST /verses", async () => {
@@ -117,7 +117,7 @@ describe("Test /verses Endpoint", () => {
         expect(res.statusCode).toEqual(200);
         expect(JSON.parse(res.payload)).toEqual(payload);
 
-        return Promise.resolve();
+        return;
     });
 
     it("PUT /verses", async () => {
@@ -139,7 +139,7 @@ describe("Test /verses Endpoint", () => {
         expect(res.statusCode).toEqual(200);
         expect(JSON.parse(res.payload)).toEqual(payload);
 
-        return Promise.resolve();
+        return;
     });
 
     it.todo("PATCH /verses");
@@ -167,7 +167,7 @@ describe("Test /verses Endpoint", () => {
         expect(res.statusCode).toEqual(200);
         expect(JSON.parse(res.payload)).toEqual(expected);
 
-        return Promise.resolve();
+        return;
     });
 
     it("GET Should Fail Authentication", async () => {
@@ -177,7 +177,7 @@ describe("Test /verses Endpoint", () => {
         });
 
         expect(res.statusCode).toEqual(401);
-        return Promise.resolve();
+        return;
     });
 
     it("GET Iterate over /verses/:id", async () => {
@@ -200,6 +200,6 @@ describe("Test /verses Endpoint", () => {
             expect(JSON.parse(res.payload)).expectedOrNull(expected);
         }
 
-        return Promise.resolve();
+        return;
     });
 });
