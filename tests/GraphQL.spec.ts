@@ -7,9 +7,9 @@ describe("Test /graphql Endpoint", () => {
     let app2: FastifyInstance;
     // Start Server and connect to DB
     beforeAll(async () => {
-        app2 = await buildServer(fastify(), { prisma });
+        app2 = await buildServer(fastify());
         await app2.listen(8083, "0.0.0.0");
-        return Promise.resolve();
+        return;
     }, 300000);
 
     // Stop Server and disconnect DB
@@ -17,7 +17,7 @@ describe("Test /graphql Endpoint", () => {
         await app2.close();
         await prisma.$disconnect();
 
-        return Promise.resolve();
+        return;
     }, 300000);
 
     it("Queries All Verses", async () => {
@@ -50,7 +50,7 @@ describe("Test /graphql Endpoint", () => {
         expect(res.statusCode).toEqual(200);
         expect(JSON.parse(res.payload)).toEqual(expected);
 
-        return Promise.resolve();
+        return;
     });
 
     it("Queries Specific Verse", async () => {
@@ -86,6 +86,6 @@ describe("Test /graphql Endpoint", () => {
         expect(res.statusCode).toEqual(200);
         expect(JSON.parse(res.payload)).toEqual(expected);
 
-        return Promise.resolve();
+        return;
     });
 });
