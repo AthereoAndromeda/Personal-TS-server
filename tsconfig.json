@@ -8,6 +8,7 @@
         "module": "CommonJS",
         "esModuleInterop": true,
         "pretty": true,
+        "strictNullChecks": true,
         "typeRoots": [
             "./typings",
             "./node_modules/@types",
