@@ -6,15 +6,11 @@ import fastifyCors from "fastify-cors";
 import mercurius from "mercurius";
 import { Route } from "typings";
 import { checkNodeEnv } from "./utils";
-import { PrismaClient } from "@prisma/client";
 import { IncomingMessage, Server, ServerResponse } from "http";
 // import middiePlugin from "middie";
 import fastifyBlipp from "fastify-blipp";
 import fastifyHelmet from "fastify-helmet";
-
-interface BuildServerOptions {
-    prisma: PrismaClient;
-}
+import prismaPlugin from "./plugins/prisma";
 
 function registerPlugins(app: FastifyInstance) {
     const ctx = {
@@ -50,6 +46,10 @@ function registerPlugins(app: FastifyInstance) {
     }
 }
 
+function registerCustomPlugins(app: FastifyInstance) {
+    app.register(prismaPlugin);
+}
+
 async function registerRoutes(app: FastifyInstance) {
     // Checks for file that ends in `.ts` or `.js`
     const validFileRegex = /\.js$|\.ts$/;
@@ -68,7 +68,7 @@ async function registerRoutes(app: FastifyInstance) {
     }
 }
 
-type BuildReturn = FastifyInstance<
+export type BuildReturn = FastifyInstance<
     Server,
     IncomingMessage,
     ServerResponse,
@@ -82,13 +82,15 @@ type BuildReturn = FastifyInstance<
  * @returns Built Fastify App or Server
  */
 export default async function buildServer(
-    app: FastifyInstance,
-    opts: BuildServerOptions
+    app: FastifyInstance
 ): Promise<BuildReturn> {
     try {
-        app.decorate("db", opts.prisma); // 3
         registerPlugins(app); // 1
+
+        registerCustomPlugins(app);
+
         await registerRoutes(app); // 2
+        // app.decorate("db", opts.prisma); // 3
 
         return app;
     } catch (err) {
