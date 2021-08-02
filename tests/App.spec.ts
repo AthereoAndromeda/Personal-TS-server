@@ -1,28 +1,39 @@
-import buildServer from "../src/server";
-import fastify, { FastifyInstance } from "fastify";
-import prisma from "../src/schema/PrismaClient";
+import buildServer, { BuildReturn } from "../src/server";
+import fastify from "fastify";
+import { mockDeep, MockProxy } from "jest-mock-extended";
+import { PrismaClient } from "@prisma/client";
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+interface MockServer extends BuildReturn {
+    db: MockProxy<PrismaClient>;
+}
 
 describe("Test Authorization and Response", () => {
-    let app1: FastifyInstance;
-    const prisma1 = prisma;
+    let app: MockServer;
 
     // Start Server and connect to DB
     beforeAll(async () => {
-        app1 = await buildServer(fastify(), { prisma: prisma1 });
-        await app1.listen(8081, "0.0.0.0");
-        return Promise.resolve();
+        app = (await buildServer(fastify())) as MockServer;
+        const prismaMock = mockDeep<PrismaClient>();
+
+        app.db = prismaMock;
+
+        await app.db.$connect();
+        await app.listen(8081, "0.0.0.0");
+        return;
     }, 300000);
 
     // Stop Server and disconnect DB
     afterAll(async () => {
-        await app1.close();
-        await prisma1.$disconnect();
+        await app.db.$disconnect();
+        await app.close();
 
-        return Promise.resolve();
+        return;
     }, 300000);
 
     it("Should Return 200 Success to all Requests", async () => {
-        const res = await app1.inject({
+        const res = await app.inject({
             method: "GET",
             url: "/",
         });
@@ -30,11 +41,11 @@ describe("Test Authorization and Response", () => {
         expect(res.statusCode).toEqual(200);
         expect(res.payload).toEqual(expect.anything());
 
-        return Promise.resolve();
+        return;
     });
 
     it("Should Return 401 Unauthorized: Incorrect Auth Key", async () => {
-        const res = await app1.inject({
+        const res = await app.inject({
             method: "GET",
             url: "/verses",
             headers: {
@@ -45,11 +56,11 @@ describe("Test Authorization and Response", () => {
         expect(res.statusCode).toEqual(401);
         expect(res.payload).toEqual(expect.anything());
 
-        return Promise.resolve();
+        return;
     });
 
     it("Should Return 401 Unauthorized: No Auth Key", async () => {
-        const res = await app1.inject({
+        const res = await app.inject({
             method: "GET",
             url: "/verses",
         });
@@ -57,11 +68,21 @@ describe("Test Authorization and Response", () => {
         expect(res.statusCode).toEqual(401);
         expect(res.payload).toEqual(expect.anything());
 
-        return Promise.resolve();
+        return;
     });
 
     it("Should Return 200 Success: Correct Auth Key", async () => {
-        const res = await app1.inject({
+        const expectedValue = [
+            {
+                id: 1,
+                title: "Test Title",
+                content: "Test Content",
+            },
+        ];
+
+        app.db.verse.findMany.mockResolvedValue(expectedValue);
+
+        const res = await app.inject({
             method: "GET",
             url: "/verses",
             headers: {
@@ -70,8 +91,8 @@ describe("Test Authorization and Response", () => {
         });
 
         expect(res.statusCode).toEqual(200);
-        expect(res.payload).toEqual(expect.anything());
+        expect(JSON.parse(res.payload)).toEqual(expectedValue);
 
-        return Promise.resolve();
+        return;
     });
 });
