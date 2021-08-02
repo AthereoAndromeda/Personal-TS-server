@@ -47,10 +47,10 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Push schema to database
-      run: npx prisma db push
+    - name: Deploy database
+      run: npx prisma migrate deploy
       
-    - name: Seed postgres database
+    - name: Seed database
       run: npx prisma db seed --preview-feature
     
     - name: Build app
