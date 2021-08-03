@@ -9,6 +9,6 @@ const route: FastifyPluginCallback = (app, opts, done) => {
 };
 
 export default {
-    path: "",
+    path: "/",
     route,
 };
