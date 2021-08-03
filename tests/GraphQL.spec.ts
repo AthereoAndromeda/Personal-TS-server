@@ -1,22 +1,22 @@
 import buildServer from "../src/server";
 import fastify, { FastifyInstance } from "fastify";
-import prisma from "../src/schema/PrismaClient";
 import * as gql from "gql-query-builder";
 
 describe("Test /graphql Endpoint", () => {
-    let app2: FastifyInstance;
+    let app: FastifyInstance;
     // Start Server and connect to DB
     beforeAll(async () => {
-        app2 = await buildServer(fastify());
-        await app2.listen(8083, "0.0.0.0");
+        app = await buildServer(fastify());
+
+        await app.db.$connect();
+        await app.listen(8083, "0.0.0.0");
         return;
     }, 300000);
 
     // Stop Server and disconnect DB
     afterAll(async () => {
-        await app2.close();
-        await prisma.$disconnect();
-
+        await app.close();
+        await app.db.$disconnect();
         return;
     }, 300000);
 
@@ -26,7 +26,7 @@ describe("Test /graphql Endpoint", () => {
             fields: ["id", "title", "content"],
         });
 
-        const res = await app2.inject({
+        const res = await app.inject({
             method: "POST",
             url: "/graphql",
             headers: {
@@ -62,7 +62,7 @@ describe("Test /graphql Endpoint", () => {
             fields: ["id", "title", "content"],
         });
 
-        const res = await app2.inject({
+        const res = await app.inject({
             method: "POST",
             url: "/graphql",
             headers: {
