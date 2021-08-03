@@ -1,6 +1,5 @@
 import buildServer from "../src/server";
 import fastify, { FastifyInstance } from "fastify";
-import prisma from "../src/schema/PrismaClient";
 
 const okObject = {
     message: () => "Ok",
@@ -43,7 +42,9 @@ describe("Test /verses Endpoint", () => {
         };
 
         app = await buildServer(fastify());
-        await prisma.verse.upsert({
+
+        await app.db.$connect();
+        await app.db.verse.upsert({
             where: {
                 id,
             },
@@ -66,13 +67,13 @@ describe("Test /verses Endpoint", () => {
     afterAll(async () => {
         await app.close();
 
-        await prisma.verse.delete({
+        await app.db.verse.delete({
             where: {
                 id: 69,
             },
         });
 
-        await prisma.$disconnect();
+        await app.db.$disconnect();
 
         return;
     }, 300000);
