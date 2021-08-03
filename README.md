@@ -1,11 +1,11 @@
 # CalNatSci-TS-server
 
-A server for [CalNatSci-TS](https://github.com/redstripez08/CalNatSci-TS)
+A server for [CalNatSci-TS](https://github.com/AthereoAndromeda/CalNatSci-TS)
 
 <div align="center">
 
-[![Docker Image CI](https://github.com/redstripez08/CalNatSci-TS-server/actions/workflows/docker-image.yml/badge.svg)](https://github.com/redstripez08/CalNatSci-TS-server/actions/workflows/docker-image.yml)
-[![Node.js CI](https://github.com/redstripez08/CalNatSci-TS-server/actions/workflows/node.js.yml/badge.svg)](https://github.com/redstripez08/CalNatSci-TS-server/actions/workflows/node.js.yml)
+[![Docker Image CI](https://github.com/AthereoAndromeda/CalNatSci-TS-server/actions/workflows/docker-image.yml/badge.svg)](https://github.com/AthereoAndromeda/CalNatSci-TS-server/actions/workflows/docker-image.yml)
+[![Node.js CI](https://github.com/AthereoAndromeda/CalNatSci-TS-server/actions/workflows/node.js.yml/badge.svg)](https://github.com/AthereoAndromeda/CalNatSci-TS-server/actions/workflows/node.js.yml)
 
 </div>
 
