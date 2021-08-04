@@ -1,12 +1,13 @@
 import buildServer, { BuildReturn } from "../src/server";
 import fastify from "fastify";
-import { mockDeep, MockProxy } from "jest-mock-extended";
+import { mockDeep } from "jest-mock-extended";
 import { PrismaClient } from "@prisma/client";
+import { DeepMockProxy } from "jest-mock-extended/lib/Mock";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-ignore Due to circular reference errors
 interface MockServer extends BuildReturn {
-    db: MockProxy<PrismaClient>;
+    db: DeepMockProxy<PrismaClient>;
 }
 
 describe("Test Authorization and Response", () => {
