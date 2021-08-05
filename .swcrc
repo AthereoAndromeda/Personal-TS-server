@@ -1,0 +1,14 @@
+{
+    "jsc": {
+        "parser": {
+            "syntax": "typescript",
+            "dynamicImport": true
+        },
+        "loose": true,
+        "target": "es2018"
+    },
+    "module": {
+        "type": "commonjs",
+        "strictMode": true
+    }
+}
