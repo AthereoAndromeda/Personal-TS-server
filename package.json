@@ -13,6 +13,10 @@
     "ts-node": "ts-node-dev",
     "test": "jest"
   },
+  "engines": {
+    "node": "^16.6.1",
+    "npm": "^7.20.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redstripez08/CalNatSci-TS-server.git"
