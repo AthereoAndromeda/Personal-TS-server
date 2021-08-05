@@ -131,7 +131,6 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 body: Verse,
                 response: {
                     200: Verse,
-                    400: Type.String(),
                 },
             },
         },
