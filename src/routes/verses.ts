@@ -1,12 +1,7 @@
 import { Type } from "@sinclair/typebox";
-import {
-    DoneFuncWithErrOrRes,
-    FastifyPluginCallback,
-    FastifyReply,
-    FastifyRequest,
-} from "fastify";
+import { FastifyPluginCallback } from "fastify";
 import { Route } from "typings";
-import { Verse, VerseType } from "../schema/Verse";
+import { VerseSchema, VerseType } from "../schema/Verse";
 
 interface ReqInterface {
     Querystring: {
@@ -18,26 +13,10 @@ interface ReqInterface {
     // Headers: {}
 
     Params: {
-        id: string;
+        id: number;
     };
 
     Body: VerseType;
-}
-
-function parseIdParam(
-    req: FastifyRequest<ReqInterface>,
-    res: FastifyReply,
-    done: DoneFuncWithErrOrRes
-) {
-    const parsedParam = parseInt(req.params.id);
-
-    if (isNaN(parsedParam)) {
-        const errMsg = "400 Bad Request: Parameter must be a Number!";
-        res.status(400).header("content-type", "text/plain").send(errMsg);
-        done();
-    }
-
-    done();
 }
 
 const route: FastifyPluginCallback = (app, opts, next) => {
@@ -51,39 +30,45 @@ const route: FastifyPluginCallback = (app, opts, next) => {
     });
 
     // Returns all verses
-    app.get<ReqInterface>("/", async (req, res) => {
-        try {
-            const data = await app.db.verse.findMany();
+    app.get<ReqInterface>(
+        "/",
+        {
+            schema: {
+                response: {
+                    200: Type.Array(VerseSchema),
+                    500: Type.String(),
+                },
+            },
+        },
+        async (req, res) => {
+            try {
+                const data = await app.db.verse.findMany();
 
-            res.status(200).send(data);
-        } catch (error) {
-            app.log.error(error);
-            res.status(500).send("500 Internal Server Error");
+                res.status(200).send(data);
+            } catch (error) {
+                app.log.error(error);
+                res.status(500).send("500 Internal Server Error");
+            }
         }
-    });
+    );
 
     // Returns verse with matching id
     app.get<ReqInterface>(
         "/:id",
-        { preHandler: parseIdParam },
+        {
+            schema: {
+                params: Type.Object({ id: Type.Number() }),
+                response: {
+                    200: VerseSchema,
+                    500: Type.String(),
+                },
+            },
+        },
         async (req, res) => {
             try {
-                const parsedParam = parseInt(req.params.id);
-
-                if (isNaN(parsedParam)) {
-                    const errMsg =
-                        "400 Bad Request: Parameter must be a Number!";
-
-                    res.status(400)
-                        .header("content-type", "text/plain")
-                        .send(errMsg);
-
-                    return;
-                }
-
                 const data = await app.db.verse.findFirst({
                     where: {
-                        id: parsedParam,
+                        id: req.params.id,
                     },
                 });
 
@@ -99,9 +84,9 @@ const route: FastifyPluginCallback = (app, opts, next) => {
         "/",
         {
             schema: {
-                body: Verse,
+                body: VerseSchema,
                 response: {
-                    200: Verse,
+                    200: VerseSchema,
                 },
             },
         },
@@ -128,9 +113,9 @@ const route: FastifyPluginCallback = (app, opts, next) => {
         "/",
         {
             schema: {
-                body: Verse,
+                body: VerseSchema,
                 response: {
-                    200: Verse,
+                    200: VerseSchema,
                 },
             },
         },
@@ -163,7 +148,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
             schema: {
                 body: Type.Object({ id: Type.Number() }),
                 response: {
-                    200: Verse,
+                    200: VerseSchema,
                 },
             },
         },
