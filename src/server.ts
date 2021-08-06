@@ -10,11 +10,14 @@ import { IncomingMessage, Server, ServerResponse } from "http";
 import fastifyBlipp from "fastify-blipp";
 import fastifyHelmet from "fastify-helmet";
 import prismaPlugin from "./plugins/prisma";
+import fastifySensible from "fastify-sensible";
 
 function registerPlugins(app: FastifyInstance) {
     app.register(fastifyBlipp);
 
     app.register(fastifyHelmet);
+
+    app.register(fastifySensible);
 
     app.register(mercurius, {
         schema: gqlSchema,
