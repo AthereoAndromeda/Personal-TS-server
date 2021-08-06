@@ -20,10 +20,10 @@ interface ReqInterface {
 }
 
 const route: FastifyPluginCallback = (app, opts, next) => {
-    app.addHook("preValidation", (req, res, done) => {
+    // Check for API key
+    app.addHook("onRequest", (req, res, done) => {
         if (req.headers.authorization !== process.env.SERVER_AUTH) {
             res.unauthorized("API Key Required");
-            done();
         }
 
         done();
