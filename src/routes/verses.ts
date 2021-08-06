@@ -22,7 +22,7 @@ interface ReqInterface {
 const route: FastifyPluginCallback = (app, opts, next) => {
     app.addHook("preValidation", (req, res, done) => {
         if (req.headers.authorization !== process.env.SERVER_AUTH) {
-            res.status(401).send("401 Unauthorized: Provide API Key");
+            res.unauthorized("API Key Required");
             done();
         }
 
@@ -36,7 +36,6 @@ const route: FastifyPluginCallback = (app, opts, next) => {
             schema: {
                 response: {
                     200: Type.Array(VerseSchema),
-                    500: Type.String(),
                 },
             },
         },
@@ -47,7 +46,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.status(500).send("500 Internal Server Error");
+                res.internalServerError(error);
             }
         }
     );
@@ -93,6 +92,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
         async (req, res) => {
             try {
                 const { id, title, content } = req.body;
+
                 const data = await app.db.verse.create({
                     data: {
                         id,
@@ -104,7 +104,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.status(500).send(error);
+                res.internalServerError(error);
             }
         }
     );
@@ -137,7 +137,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.status(500).send(error);
+                res.internalServerError(error);
             }
         }
     );
@@ -165,7 +165,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.status(500).send(error);
+                res.internalServerError(error);
             }
         }
     );
