@@ -39,6 +39,7 @@
     "fastify-oauth2": "^4.2.3",
     "fastify-plugin": "^3.0.0",
     "fastify-secure-session": "^2.3.1",
+    "fastify-sensible": "^3.1.1",
     "got": "^11.8.2",
     "gql-query-builder": "^3.5.5",
     "graphql": "^15.5.1",
