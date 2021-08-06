@@ -1,26 +1,52 @@
-import buildServer from "../src/server";
-import fastify, { FastifyInstance } from "fastify";
+import buildServer, { BuildReturn } from "../src/server";
+import fastify from "fastify";
 import * as gql from "gql-query-builder";
+import {
+    DeepMockProxy,
+    mockDeep,
+    mockReset,
+} from "jest-mock-extended/lib/Mock";
+import { PrismaClient, Verse } from "@prisma/client";
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore Due to circular reference errors
+interface MockServer extends BuildReturn {
+    db: DeepMockProxy<PrismaClient>;
+}
 
 describe("Test /graphql Endpoint", () => {
-    let app: FastifyInstance;
-    // Start Server and connect to DB
+    let app: MockServer;
+    const prismaMock = mockDeep<PrismaClient>();
+    const verses: Verse[] = [
+        {
+            id: 1,
+            title: "Test Title",
+            content: "Test Content",
+        },
+        {
+            id: 2,
+            title: "Test Title 2",
+            content: "Test Content 2",
+        },
+    ];
+
     beforeAll(async () => {
-        app = await buildServer(fastify());
+        app = (await buildServer(fastify())) as MockServer;
+        app.db = prismaMock;
+    });
 
-        await app.db.$connect();
-        await app.listen(8083, "0.0.0.0");
-        return;
-    }, 300000);
+    beforeEach(() => {
+        app.db = prismaMock;
+    });
 
-    // Stop Server and disconnect DB
-    afterAll(async () => {
-        await app.close();
-        await app.db.$disconnect();
-        return;
-    }, 300000);
+    afterEach(() => {
+        mockReset(app.db);
+    });
 
     it("Queries All Verses", async () => {
+        const expectedValue = verses;
+        app.db.verse.findMany.mockResolvedValue(expectedValue);
+
         const payload = gql.query({
             operation: "verse",
             fields: ["id", "title", "content"],
@@ -35,25 +61,18 @@ describe("Test /graphql Endpoint", () => {
             payload,
         });
 
-        const expected = {
+        expect(res.statusCode).toBe(200);
+        expect(JSON.parse(res.payload)).toEqual({
             data: {
-                verse: expect.arrayContaining([
-                    {
-                        id: expect.any(Number),
-                        content: expect.any(String),
-                        title: expect.any(String),
-                    },
-                ]),
+                verse: expectedValue,
             },
-        };
-
-        expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(expected);
-
-        return;
+        });
     });
 
     it("Queries Specific Verse", async () => {
+        const expectedValue = verses[0];
+        app.db.verse.findUnique.mockResolvedValue(expectedValue);
+
         const payload = gql.query({
             operation: "verse",
             variables: {
@@ -71,21 +90,11 @@ describe("Test /graphql Endpoint", () => {
             payload,
         });
 
-        const expected = {
+        expect(res.statusCode).toBe(200);
+        expect(JSON.parse(res.payload)).toEqual({
             data: {
-                verse: [
-                    {
-                        id: expect.any(Number),
-                        content: expect.any(String),
-                        title: expect.any(String),
-                    },
-                ],
+                verse: [expectedValue],
             },
-        };
-
-        expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(expected);
-
-        return;
+        });
     });
 });
