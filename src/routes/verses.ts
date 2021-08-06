@@ -59,14 +59,14 @@ const route: FastifyPluginCallback = (app, opts, next) => {
             schema: {
                 params: Type.Object({ id: Type.Number() }),
                 response: {
-                    200: VerseSchema,
+                    200: Type.Union([VerseSchema, Type.Null()]),
                     500: Type.String(),
                 },
             },
         },
         async (req, res) => {
             try {
-                const data = await app.db.verse.findFirst({
+                const data = await app.db.verse.findUnique({
                     where: {
                         id: req.params.id,
                     },
