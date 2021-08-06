@@ -3,7 +3,6 @@ import fsp from "fs/promises";
 import path from "path";
 import gqlSchema from "./graphql";
 import fastifyCors from "fastify-cors";
-import mercurius from "mercurius";
 import { Route } from "typings";
 import { checkNodeEnv } from "./utils";
 import { IncomingMessage, Server, ServerResponse } from "http";
@@ -11,6 +10,7 @@ import fastifyBlipp from "fastify-blipp";
 import fastifyHelmet from "fastify-helmet";
 import prismaPlugin from "./plugins/prisma";
 import fastifySensible from "fastify-sensible";
+import mercurius from "mercurius";
 
 function registerPlugins(app: FastifyInstance) {
     app.register(fastifyBlipp);
@@ -21,8 +21,22 @@ function registerPlugins(app: FastifyInstance) {
 
     app.register(mercurius, {
         schema: gqlSchema,
-        graphiql: "playground",
-        context: () => ({ db: app.db }),
+        context: (req, res) => ({
+            req,
+            res,
+            db: app.db,
+        }),
+    }).after(() => {
+        app.graphql.addHook("preParsing", async (schema, src, ctx) => {
+            const isAuthorized =
+                ctx.reply.request.headers.authorization !==
+                process.env.SERVER_AUTH;
+
+            if (isAuthorized) {
+                // ctx.reply.unauthorized();
+                throw new Error("401 Unauthorized");
+            }
+        });
     });
 
     app.register(fastifyCors, {
@@ -32,7 +46,6 @@ function registerPlugins(app: FastifyInstance) {
     if (checkNodeEnv("development")) {
         import("altair-fastify-plugin").then(data => {
             const Altair = data.default;
-
             app.register(Altair, {
                 path: "/altair",
             });
