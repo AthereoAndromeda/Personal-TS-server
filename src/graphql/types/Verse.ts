@@ -25,7 +25,7 @@ export const VerseQuery = queryField("verse", {
     },
     async resolve(_, args, ctx) {
         if (args.id) {
-            const data = await ctx.db.verse.findFirst({
+            const data = await ctx.db.verse.findUnique({
                 where: {
                     id: args.id,
                 },
