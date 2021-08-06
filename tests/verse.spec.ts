@@ -1,5 +1,17 @@
-import buildServer from "../src/server";
-import fastify, { FastifyInstance } from "fastify";
+import buildServer, { BuildReturn } from "../src/server";
+import fastify from "fastify";
+import {
+    DeepMockProxy,
+    mockDeep,
+    mockReset,
+} from "jest-mock-extended/lib/Mock";
+import { PrismaClient, Verse } from "@prisma/client";
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore Due to circular reference errors
+interface MockServer extends BuildReturn {
+    db: DeepMockProxy<PrismaClient>;
+}
 
 const okObject = {
     message: () => "Ok",
@@ -10,7 +22,7 @@ expect.extend({
     expectedOrNull(received, arg) {
         if (received === null) {
             return okObject;
-        } else if (received.id) {
+        } else if (this.equals(received, arg)) {
             return okObject;
         } else {
             return {
@@ -24,61 +36,46 @@ expect.extend({
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace jest {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        interface Matchers<R> {
-            expectedOrNull(a: unknown): typeof okObject;
+        interface Matchers<R extends void | Promise<void>> {
+            expectedOrNull<E = unknown>(a: E): R;
         }
     }
 }
 
 describe("Test /verses Endpoint", () => {
-    let app: FastifyInstance;
+    let app: MockServer;
+    const prismaMock = mockDeep<PrismaClient>();
 
     beforeAll(async () => {
-        const { id, content, title } = {
-            id: 70,
-            content: "asaas",
-            title: "yeet",
-        };
-
-        app = await buildServer(fastify());
-
-        await app.db.$connect();
-        await app.db.verse.upsert({
-            where: {
-                id,
-            },
-            create: {
-                id,
-                content,
-                title,
-            },
-            update: {
-                id,
-                content,
-                title,
-            },
-        });
-
-        await app.listen(8069, "0.0.0.0");
-        return;
+        app = (await buildServer(fastify())) as MockServer;
+        // app.db = prismaMock;
     }, 300000);
 
-    afterAll(async () => {
-        await app.close();
+    beforeEach(() => {
+        app.db = prismaMock;
+    });
 
-        await app.db.verse.delete({
-            where: {
-                id: 69,
-            },
-        });
+    afterEach(() => {
+        mockReset(app.db);
+    });
 
-        await app.db.$disconnect();
-
-        return;
-    }, 300000);
+    const verses: Verse[] = [
+        {
+            id: 1,
+            content: "Test Content",
+            title: "Test Title",
+        },
+        {
+            id: 2,
+            content: "Test Content 2",
+            title: "Test Title 2",
+        },
+    ];
 
     it("GET /verses", async () => {
+        const expectedValue = verses;
+        app.db.verse.findMany.mockResolvedValue(expectedValue);
+
         const res = await app.inject({
             method: "GET",
             url: "/verses",
@@ -87,47 +84,30 @@ describe("Test /verses Endpoint", () => {
             },
         });
 
-        const expected = expect.arrayContaining([
-            expect.objectContaining({
-                id: expect.any(Number),
-                content: expect.any(String),
-                title: expect.any(String),
-            }),
-        ]);
-
-        expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(expected);
-
-        return;
+        expect(res.statusCode).toBe(200);
+        expect(JSON.parse(res.payload)).toEqual(expectedValue);
     });
 
     it("POST /verses", async () => {
-        const payload = {
-            id: 69,
-            title: "nice",
-            content: "i know very mature",
-        };
+        const expectedValue = verses[0];
+        app.db.verse.create.mockResolvedValue(expectedValue);
+
         const res = await app.inject({
             method: "POST",
             url: "/verses",
             headers: {
                 authorization: process.env.SERVER_AUTH,
             },
-            payload,
+            payload: expectedValue,
         });
 
-        expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(payload);
-
-        return;
+        expect(res.statusCode).toBe(200);
+        expect(JSON.parse(res.payload)).toEqual(expectedValue);
     });
 
     it("PUT /verses", async () => {
-        const payload = {
-            id: 2,
-            title: "PUT Test",
-            content: "Content",
-        };
+        const expectedValue = verses[0];
+        app.db.verse.update.mockResolvedValue(expectedValue);
 
         const res = await app.inject({
             method: "PUT",
@@ -135,21 +115,19 @@ describe("Test /verses Endpoint", () => {
             headers: {
                 authorization: process.env.SERVER_AUTH,
             },
-            payload,
+            payload: expectedValue,
         });
 
-        expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(payload);
-
-        return;
+        expect(res.statusCode).toBe(200);
+        expect(JSON.parse(res.payload)).toEqual(expectedValue);
     });
 
     it.todo("PATCH /verses");
 
     it("DELETE /verses", async () => {
-        const payload = {
-            id: 70,
-        };
+        const expectedValue = verses[0];
+        const payload = { id: expectedValue.id };
+        app.db.verse.delete.mockResolvedValue(expectedValue);
 
         const res = await app.inject({
             method: "DELETE",
@@ -160,36 +138,36 @@ describe("Test /verses Endpoint", () => {
             payload,
         });
 
-        const expected = {
-            id: 70,
-            title: expect.any(String),
-            content: expect.any(String),
-        };
-
-        expect(res.statusCode).toEqual(200);
-        expect(JSON.parse(res.payload)).toEqual(expected);
-
-        return;
+        expect(res.statusCode).toBe(200);
+        expect(JSON.parse(res.payload)).toEqual(expectedValue);
     });
 
     it("GET Should Fail Authentication", async () => {
+        const expectedValue = {
+            statusCode: 401,
+            error: "Unauthorized",
+            message: "API Key Required",
+        };
+
         const res = await app.inject({
             method: "GET",
             url: "/verses",
         });
 
-        expect(res.statusCode).toEqual(401);
-        return;
+        expect(res.statusCode).toBe(401);
+        expect(JSON.parse(res.payload)).toEqual(expectedValue);
     });
 
     it("GET Iterate over /verses/:id", async () => {
-        const expected = expect.objectContaining({
-            id: expect.any(Number),
-            content: expect.any(String),
-            title: expect.any(String),
-        });
+        app.db.verse.findUnique
+            .mockResolvedValueOnce(verses[0])
+            .mockResolvedValueOnce(verses[1])
+            .mockResolvedValue(null);
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 3; i++) {
+            const expectedValue = verses[i] ? verses[i] : null;
+            console.log(expectedValue);
+
             const res = await app.inject({
                 method: "GET",
                 url: `/verses/${i}`,
@@ -198,10 +176,8 @@ describe("Test /verses Endpoint", () => {
                 },
             });
 
-            expect(res.statusCode).toEqual(200);
-            expect(JSON.parse(res.payload)).expectedOrNull(expected);
+            expect(res.statusCode).toBe(200);
+            expect(JSON.parse(res.payload)).expectedOrNull(expectedValue);
         }
-
-        return;
     });
 });
