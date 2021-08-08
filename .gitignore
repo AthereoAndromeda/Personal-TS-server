@@ -5,3 +5,4 @@ dist
 others
 !example.env
 coverage
+logs
