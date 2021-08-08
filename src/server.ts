@@ -11,8 +11,13 @@ import fastifyHelmet from "fastify-helmet";
 import prismaPlugin from "./plugins/prisma";
 import fastifySensible from "fastify-sensible";
 import mercurius from "mercurius";
+import { PrismaClient } from "@prisma/client";
 
-function registerPlugins(app: FastifyInstance) {
+export interface BuildServerOptions {
+    db: PrismaClient;
+}
+
+function registerPlugins(app: FastifyInstance, options: BuildServerOptions) {
     app.register(fastifyBlipp);
 
     app.register(fastifyHelmet);
@@ -24,7 +29,7 @@ function registerPlugins(app: FastifyInstance) {
         context: (req, res) => ({
             req,
             res,
-            db: app.db,
+            db: options.db,
         }),
     }).after(() => {
         app.graphql.addHook("preParsing", async (schema, src, ctx) => {
@@ -51,8 +56,11 @@ function registerPlugins(app: FastifyInstance) {
     }
 }
 
-function registerCustomPlugins(app: FastifyInstance) {
-    app.register(prismaPlugin);
+function registerCustomPlugins(
+    app: FastifyInstance,
+    options: BuildServerOptions
+) {
+    app.register(prismaPlugin, { db: options.db });
 }
 
 async function registerRoutes(app: FastifyInstance) {
@@ -86,19 +94,21 @@ export type BuildReturn = FastifyInstance<
  * @param opts Server Options
  * @returns Built Fastify App or Server
  */
-export default async function buildServer(
-    app: FastifyInstance
+async function buildServer(
+    app: FastifyInstance,
+    options: BuildServerOptions
 ): Promise<BuildReturn> {
     try {
-        registerCustomPlugins(app); // 2
-
-        registerPlugins(app); // 1
-
+        registerPlugins(app, options); // 1
+        registerCustomPlugins(app, options); // 2
         await registerRoutes(app); // 3
 
+        await app.ready();
         return app;
     } catch (err) {
         app.log.error(err);
         throw new Error(err);
     }
 }
+
+export default buildServer;
