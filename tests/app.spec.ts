@@ -204,98 +204,235 @@ describe("Test App Endpoints", () => {
     });
 
     describe("Test /graphql", () => {
-        it("Queries All Verses", async () => {
+        describe("Queries All Verses", () => {
             const expectedValue = verses;
-            app.db.verse.findMany.mockResolvedValue(expectedValue);
 
-            const payload = gql.query({
-                operation: "verse",
-                fields: ["id", "title", "content"],
+            it("Return Success", async () => {
+                app.db.verse.findMany.mockResolvedValue(expectedValue);
+
+                const payload = gql.query({
+                    operation: "verse",
+                    fields: ["id", "title", "content"],
+                });
+
+                const res = await app.inject({
+                    method: "POST",
+                    url: "/graphql",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual({
+                    data: {
+                        verse: expectedValue,
+                    },
+                });
             });
 
-            const res = await app.inject({
-                method: "POST",
-                url: "/graphql",
-                headers: {
-                    authorization: process.env.SERVER_AUTH,
-                },
-                payload,
-            });
+            it("Throw Error", async () => {
+                const errMsg = "Error Test";
+                app.db.verse.findMany.mockRejectedValue(errMsg);
 
-            expect(res.statusCode).toBe(200);
-            expect(JSON.parse(res.payload)).toEqual({
-                data: {
-                    verse: expectedValue,
-                },
+                const payload = gql.query({
+                    operation: "verse",
+                    fields: ["id", "title", "content"],
+                });
+
+                const res = await app.inject({
+                    method: "POST",
+                    url: "/graphql",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual({
+                    data: {
+                        verse: null,
+                    },
+                    errors: [
+                        {
+                            message: errMsg,
+                            path: ["verse"],
+                            locations: expect.arrayContaining([
+                                {
+                                    line: expect.any(Number),
+                                    column: expect.any(Number),
+                                },
+                            ]),
+                        },
+                    ],
+                });
             });
         });
 
-        it("Queries Specific Verse", async () => {
+        describe("Queries Specific Verse", () => {
             const expectedValue = verses[0];
-            app.db.verse.findUnique.mockResolvedValue(expectedValue);
 
-            const payload = gql.query({
-                operation: "verse",
-                variables: {
-                    id: 1,
-                },
-                fields: ["id", "title", "content"],
+            it("Return Success", async () => {
+                app.db.verse.findUnique.mockResolvedValue(expectedValue);
+
+                const payload = gql.query({
+                    operation: "verse",
+                    variables: {
+                        id: 1,
+                    },
+                    fields: ["id", "title", "content"],
+                });
+
+                const res = await app.inject({
+                    method: "POST",
+                    url: "/graphql",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual({
+                    data: {
+                        verse: [expectedValue],
+                    },
+                });
             });
 
-            const res = await app.inject({
-                method: "POST",
-                url: "/graphql",
-                headers: {
-                    authorization: process.env.SERVER_AUTH,
-                },
-                payload,
-            });
+            it("Throws Error", async () => {
+                const errMsg = "Error Test";
+                app.db.verse.findUnique.mockRejectedValue(errMsg);
 
-            expect(res.statusCode).toBe(200);
-            expect(JSON.parse(res.payload)).toEqual({
-                data: {
-                    verse: [expectedValue],
-                },
+                const payload = gql.query({
+                    operation: "verse",
+                    variables: {
+                        id: 1,
+                    },
+                    fields: ["id", "title", "content"],
+                });
+
+                const res = await app.inject({
+                    method: "POST",
+                    url: "/graphql",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual({
+                    data: { verse: null },
+                    errors: [
+                        {
+                            message: errMsg,
+                            path: ["verse"],
+                            locations: expect.arrayContaining([
+                                {
+                                    line: expect.any(Number),
+                                    column: expect.any(Number),
+                                },
+                            ]),
+                        },
+                    ],
+                });
             });
         });
 
-        it("Mutates single verse", async () => {
+        describe("Mutates single verse", () => {
             const expectedValue = verses[0];
-            app.db.verse.upsert.mockResolvedValue(expectedValue);
 
-            const payload = gql.mutation({
-                operation: "verse",
-                variables: {
-                    id: {
-                        value: expectedValue.id,
-                        required: true,
+            it("Return success", async () => {
+                app.db.verse.upsert.mockResolvedValue(expectedValue);
+
+                const payload = gql.mutation({
+                    operation: "verse",
+                    variables: {
+                        id: {
+                            value: expectedValue.id,
+                            required: true,
+                        },
+                        title: {
+                            value: expectedValue.title,
+                            required: true,
+                        },
+                        content: {
+                            value: expectedValue.content,
+                            required: true,
+                        },
                     },
-                    title: {
-                        value: expectedValue.title,
-                        required: true,
+                    fields: ["id", "title", "content"],
+                });
+
+                const res = await app.inject({
+                    method: "POST",
+                    url: "/graphql",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
                     },
-                    content: {
-                        value: expectedValue.content,
-                        required: true,
+                    payload,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual({
+                    data: {
+                        verse: expectedValue,
                     },
-                },
-                fields: ["id", "title", "content"],
+                });
             });
 
-            const res = await app.inject({
-                method: "POST",
-                url: "/graphql",
-                headers: {
-                    authorization: process.env.SERVER_AUTH,
-                },
-                payload,
-            });
+            it("Throw error", async () => {
+                const someValue = verses[0];
+                const errMessage = "Error Test";
+                app.db.verse.upsert.mockRejectedValue(errMessage);
 
-            expect(res.statusCode).toBe(200);
-            expect(JSON.parse(res.payload)).toEqual({
-                data: {
-                    verse: expectedValue,
-                },
+                const payload = gql.mutation({
+                    operation: "verse",
+                    variables: {
+                        id: {
+                            value: someValue.id,
+                            required: true,
+                        },
+                        title: {
+                            value: someValue.title,
+                            required: true,
+                        },
+                        content: {
+                            value: someValue.content,
+                            required: true,
+                        },
+                    },
+                    fields: ["id", "title", "content"],
+                });
+
+                const res = await app.inject({
+                    method: "POST",
+                    url: "/graphql",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual({
+                    data: { verse: null },
+                    errors: [
+                        {
+                            message: errMessage,
+                            path: ["verse"],
+                            locations: expect.arrayContaining([
+                                {
+                                    line: expect.any(Number),
+                                    column: expect.any(Number),
+                                },
+                            ]),
+                        },
+                    ],
+                });
             });
         });
     });
