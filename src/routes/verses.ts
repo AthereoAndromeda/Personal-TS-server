@@ -19,7 +19,13 @@ interface ReqInterface {
     Body: VerseType;
 }
 
-const route: FastifyPluginCallback = (app, opts, next) => {
+const error500Schema = Type.Object({
+    statusCode: Type.Number(),
+    message: Type.String(),
+    error: Type.String(),
+});
+
+const route: FastifyPluginCallback = (app, opts, done) => {
     // Check for API key
     app.addHook("onRequest", (req, res, done) => {
         if (req.headers.authorization !== process.env.SERVER_AUTH) {
@@ -36,13 +42,13 @@ const route: FastifyPluginCallback = (app, opts, next) => {
             schema: {
                 response: {
                     200: Type.Array(VerseSchema),
+                    500: error500Schema,
                 },
             },
         },
         async (req, res) => {
             try {
                 const data = await app.db.verse.findMany();
-
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
@@ -59,7 +65,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 params: Type.Object({ id: Type.Number() }),
                 response: {
                     200: Type.Union([VerseSchema, Type.Null()]),
-                    500: Type.String(),
+                    500: error500Schema,
                 },
             },
         },
@@ -74,7 +80,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.status(500).send("500 Internal Server Error");
+                res.internalServerError(error);
             }
         }
     );
@@ -86,6 +92,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 body: VerseSchema,
                 response: {
                     200: VerseSchema,
+                    500: error500Schema,
                 },
             },
         },
@@ -116,6 +123,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 body: VerseSchema,
                 response: {
                     200: VerseSchema,
+                    500: error500Schema,
                 },
             },
         },
@@ -149,6 +157,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
                 body: Type.Object({ id: Type.Number() }),
                 response: {
                     200: VerseSchema,
+                    500: error500Schema,
                 },
             },
         },
@@ -170,7 +179,7 @@ const route: FastifyPluginCallback = (app, opts, next) => {
         }
     );
 
-    next();
+    done();
 };
 
 export default {
