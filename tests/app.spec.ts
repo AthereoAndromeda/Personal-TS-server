@@ -1,9 +1,9 @@
 import buildServer, { BuildReturn } from "../src/server";
 import fastify from "fastify";
 import * as gql from "gql-query-builder";
-import { mockDeep } from "jest-mock-extended";
+import { mockDeep, mockReset } from "jest-mock-extended";
 import { PrismaClient, Verse } from "@prisma/client";
-import { DeepMockProxy, mockReset } from "jest-mock-extended/lib/Mock";
+import { DeepMockProxy } from "jest-mock-extended/lib/Mock";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore Due to circular reference errors
@@ -110,96 +110,219 @@ describe("Test App Endpoints", () => {
             expect(JSON.parse(res.payload)).toStrictEqual(noAPIKey);
         });
 
-        it("GET /verses", async () => {
+        describe("GET /verses", () => {
             const expectedValue = verses;
-            app.db.verse.findMany.mockResolvedValue(expectedValue);
+            const errMsg = "Some Error";
 
-            const res = await app.inject({
-                method: "GET",
-                url: "/verses",
-                headers: {
-                    authorization: process.env.SERVER_AUTH,
-                },
-            });
-
-            expect(res.statusCode).toBe(200);
-            expect(JSON.parse(res.payload)).toEqual(expectedValue);
-        });
-
-        it("POST /verses", async () => {
-            const expectedValue = verses[0];
-            app.db.verse.create.mockResolvedValue(expectedValue);
-
-            const res = await app.inject({
-                method: "POST",
-                url: "/verses",
-                headers: {
-                    authorization: process.env.SERVER_AUTH,
-                },
-                payload: expectedValue,
-            });
-
-            expect(res.statusCode).toBe(200);
-            expect(JSON.parse(res.payload)).toEqual(expectedValue);
-        });
-
-        it("PUT /verses", async () => {
-            const expectedValue = verses[0];
-            app.db.verse.update.mockResolvedValue(expectedValue);
-
-            const res = await app.inject({
-                method: "PUT",
-                url: "/verses",
-                headers: {
-                    authorization: process.env.SERVER_AUTH,
-                },
-                payload: expectedValue,
-            });
-
-            expect(res.statusCode).toBe(200);
-            expect(JSON.parse(res.payload)).toEqual(expectedValue);
-        });
-
-        it.todo("PATCH /verses");
-
-        it("DELETE /verses", async () => {
-            const expectedValue = verses[0];
-            const payload = { id: expectedValue.id };
-            app.db.verse.delete.mockResolvedValue(expectedValue);
-
-            const res = await app.inject({
-                method: "DELETE",
-                url: "/verses",
-                headers: {
-                    authorization: process.env.SERVER_AUTH,
-                },
-                payload,
-            });
-
-            expect(res.statusCode).toBe(200);
-            expect(JSON.parse(res.payload)).toEqual(expectedValue);
-        });
-
-        it("GET Iterate over /verses/:id", async () => {
-            app.db.verse.findUnique
-                .mockResolvedValueOnce(verses[0])
-                .mockResolvedValueOnce(verses[1])
-                .mockResolvedValue(null);
-
-            for (let i = 0; i < 3; i++) {
-                const expectedValue = verses[i] ? verses[i] : null;
+            it("Success", async () => {
+                app.db.verse.findMany.mockResolvedValue(expectedValue);
 
                 const res = await app.inject({
                     method: "GET",
-                    url: `/verses/${i}`,
+                    url: "/verses",
                     headers: {
                         authorization: process.env.SERVER_AUTH,
                     },
                 });
 
                 expect(res.statusCode).toBe(200);
-                expect(JSON.parse(res.payload)).toEqualNullable(expectedValue);
-            }
+                expect(JSON.parse(res.payload)).toEqual(expectedValue);
+            });
+
+            it("Throws Error", async () => {
+                app.db.verse.findMany.mockRejectedValue(errMsg);
+
+                const res = await app.inject({
+                    method: "GET",
+                    url: "/verses",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                });
+
+                expect(res.statusCode).toBe(500);
+                expect(JSON.parse(res.payload)).toEqual({
+                    error: "Internal Server Error",
+                    message: errMsg,
+                    statusCode: 500,
+                });
+            });
+        });
+
+        describe("GET /verses/:id", () => {
+            const errMsg = "Some Error";
+
+            it("Iterate over /verses/:id", async () => {
+                app.db.verse.findUnique
+                    .mockResolvedValueOnce(verses[0])
+                    .mockResolvedValueOnce(verses[1])
+                    .mockResolvedValue(null);
+
+                for (let i = 0; i < 3; i++) {
+                    const expectedValue = verses[i] ? verses[i] : null;
+
+                    const res = await app.inject({
+                        method: "GET",
+                        url: `/verses/${i}`,
+                        headers: {
+                            authorization: process.env.SERVER_AUTH,
+                        },
+                    });
+
+                    expect(res.statusCode).toBe(200);
+                    expect(JSON.parse(res.payload)).toEqualNullable(
+                        expectedValue
+                    );
+                }
+            });
+
+            it("Throws Error", async () => {
+                app.db.verse.findUnique.mockRejectedValue(errMsg);
+
+                const res = await app.inject({
+                    method: "GET",
+                    url: `/verses/1`,
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                });
+
+                expect(res.statusCode).toBe(500);
+                expect(JSON.parse(res.payload)).toEqual({
+                    error: "Internal Server Error",
+                    message: errMsg,
+                    statusCode: 500,
+                });
+            });
+        });
+
+        describe("POST /verses", () => {
+            const expectedValue = verses[0];
+            const errMsg = "Some Error";
+
+            it("Success", async () => {
+                app.db.verse.create.mockResolvedValue(expectedValue);
+
+                const res = await app.inject({
+                    method: "POST",
+                    url: "/verses",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload: expectedValue,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual(expectedValue);
+            });
+
+            it("Throws Error", async () => {
+                app.db.verse.create.mockRejectedValue(errMsg);
+
+                const res = await app.inject({
+                    method: "POST",
+                    url: "/verses",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload: expectedValue,
+                });
+
+                expect(res.statusCode).toBe(500);
+                expect(JSON.parse(res.payload)).toEqual({
+                    error: "Internal Server Error",
+                    message: errMsg,
+                    statusCode: 500,
+                });
+            });
+        });
+
+        describe("PUT /verses", () => {
+            const expectedValue = verses[0];
+            const errMsg = "Some Error";
+
+            it("Success", async () => {
+                app.db.verse.update.mockResolvedValue(expectedValue);
+
+                const res = await app.inject({
+                    method: "PUT",
+                    url: "/verses",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload: expectedValue,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual(expectedValue);
+            });
+
+            it("Throws Error", async () => {
+                app.db.verse.update.mockRejectedValue(errMsg);
+
+                const res = await app.inject({
+                    method: "PUT",
+                    url: "/verses",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload: expectedValue,
+                });
+
+                expect(res.statusCode).toBe(500);
+                expect(JSON.parse(res.payload)).toEqual({
+                    error: "Internal Server Error",
+                    message: errMsg,
+                    statusCode: 500,
+                });
+            });
+        });
+
+        describe("PATCH /verses", () => {
+            it.todo("Success");
+            it.todo("Throws Error");
+        });
+
+        describe("DELETE /verses", () => {
+            const expectedValue = verses[0];
+            const payload = { id: expectedValue.id };
+            const errMsg = "Some Error";
+
+            it("Success", async () => {
+                app.db.verse.delete.mockResolvedValue(expectedValue);
+
+                const res = await app.inject({
+                    method: "DELETE",
+                    url: "/verses",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload,
+                });
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqual(expectedValue);
+            });
+
+            it("Throws Error", async () => {
+                app.db.verse.delete.mockRejectedValue(errMsg);
+
+                const res = await app.inject({
+                    method: "DELETE",
+                    url: "/verses",
+                    headers: {
+                        authorization: process.env.SERVER_AUTH,
+                    },
+                    payload,
+                });
+
+                expect(res.statusCode).toBe(500);
+                expect(JSON.parse(res.payload)).toEqual({
+                    error: "Internal Server Error",
+                    message: errMsg,
+                    statusCode: 500,
+                });
+            });
         });
     });
 
