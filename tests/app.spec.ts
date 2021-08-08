@@ -1,9 +1,10 @@
 import buildServer, { BuildReturn } from "../src/server";
-import fastify from "fastify";
+import fastify, { InjectOptions } from "fastify";
 import * as gql from "gql-query-builder";
 import { mockDeep, mockReset } from "jest-mock-extended";
 import { PrismaClient, Verse } from "@prisma/client";
 import { DeepMockProxy } from "jest-mock-extended/lib/Mock";
+import "./helper";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore Due to circular reference errors
@@ -11,38 +12,9 @@ interface MockServer extends BuildReturn {
     db: DeepMockProxy<PrismaClient>;
 }
 
-declare global {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
-    namespace jest {
-        interface Matchers<R extends void | Promise<void>> {
-            /** Same as `toEqual()`, but allows null values*/
-            toEqualNullable<E = unknown>(a: E): R;
-        }
-    }
-}
-
-const okObject = {
-    message: () => "Ok",
-    pass: true,
-};
-
-expect.extend({
-    toEqualNullable(received, expected) {
-        if (received === null) {
-            return okObject;
-        } else if (this.equals(received, expected)) {
-            return okObject;
-        } else {
-            return {
-                message: () => `expected ${received} to be ${expected}`,
-                pass: false,
-            };
-        }
-    },
-});
-
 describe("Test App Endpoints", () => {
     let app: MockServer;
+    const errMsg = "Some Error";
     const verses: Verse[] = [
         {
             id: 1,
@@ -55,8 +27,14 @@ describe("Test App Endpoints", () => {
             title: "Test Title 2",
         },
     ];
+    const injectOpts: InjectOptions = {
+        method: "GET",
+        url: "/verses",
+        headers: {
+            authorization: process.env.SERVER_AUTH,
+        },
+    };
 
-    // Start Server and connect to DB
     beforeAll(async () => {
         app = (await buildServer(fastify())) as MockServer;
         const prismaMock = mockDeep<PrismaClient>();
@@ -87,24 +65,10 @@ describe("Test App Endpoints", () => {
             message: "API Key Required",
         };
 
-        it("Return 401 Unauthorized: No Auth Key", async () => {
-            const res = await app.inject({
-                method: "GET",
-                url: "/verses",
-            });
-
-            expect(res.statusCode).toBe(401);
-            expect(JSON.parse(res.payload)).toStrictEqual(noAPIKey);
-        });
-
-        it("Return 401 Unauthorized: Incorrect Auth Key", async () => {
-            const res = await app.inject({
-                method: "GET",
-                url: "/verses",
-                headers: {
-                    authorization: "incorrectAuthorizationKey",
-                },
-            });
+        it("Return 401 Unauthorized", async () => {
+            const deepCloneOpts = JSON.parse(JSON.stringify(injectOpts));
+            deepCloneOpts.headers.authorization = "incorrect";
+            const res = await app.inject(deepCloneOpts);
 
             expect(res.statusCode).toBe(401);
             expect(JSON.parse(res.payload)).toStrictEqual(noAPIKey);
@@ -112,18 +76,10 @@ describe("Test App Endpoints", () => {
 
         describe("GET /verses", () => {
             const expectedValue = verses;
-            const errMsg = "Some Error";
 
             it("Success", async () => {
                 app.db.verse.findMany.mockResolvedValue(expectedValue);
-
-                const res = await app.inject({
-                    method: "GET",
-                    url: "/verses",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                });
+                const res = await app.inject(injectOpts);
 
                 expect(res.statusCode).toBe(200);
                 expect(JSON.parse(res.payload)).toEqual(expectedValue);
@@ -131,14 +87,7 @@ describe("Test App Endpoints", () => {
 
             it("Throws Error", async () => {
                 app.db.verse.findMany.mockRejectedValue(errMsg);
-
-                const res = await app.inject({
-                    method: "GET",
-                    url: "/verses",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                });
+                const res = await app.inject(injectOpts);
 
                 expect(res.statusCode).toBe(500);
                 expect(JSON.parse(res.payload)).toEqual({
@@ -150,7 +99,7 @@ describe("Test App Endpoints", () => {
         });
 
         describe("GET /verses/:id", () => {
-            const errMsg = "Some Error";
+            const cloneOpts = { ...injectOpts };
 
             it("Iterate over /verses/:id", async () => {
                 app.db.verse.findUnique
@@ -159,15 +108,9 @@ describe("Test App Endpoints", () => {
                     .mockResolvedValue(null);
 
                 for (let i = 0; i < 3; i++) {
+                    cloneOpts.url = `/verses/${i}`;
                     const expectedValue = verses[i] ? verses[i] : null;
-
-                    const res = await app.inject({
-                        method: "GET",
-                        url: `/verses/${i}`,
-                        headers: {
-                            authorization: process.env.SERVER_AUTH,
-                        },
-                    });
+                    const res = await app.inject(cloneOpts);
 
                     expect(res.statusCode).toBe(200);
                     expect(JSON.parse(res.payload)).toEqualNullable(
@@ -178,14 +121,7 @@ describe("Test App Endpoints", () => {
 
             it("Throws Error", async () => {
                 app.db.verse.findUnique.mockRejectedValue(errMsg);
-
-                const res = await app.inject({
-                    method: "GET",
-                    url: `/verses/1`,
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                });
+                const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(500);
                 expect(JSON.parse(res.payload)).toEqual({
@@ -198,19 +134,13 @@ describe("Test App Endpoints", () => {
 
         describe("POST /verses", () => {
             const expectedValue = verses[0];
-            const errMsg = "Some Error";
+            const cloneOpts = { ...injectOpts };
+            cloneOpts.method = "POST";
+            cloneOpts.payload = expectedValue;
 
             it("Success", async () => {
                 app.db.verse.create.mockResolvedValue(expectedValue);
-
-                const res = await app.inject({
-                    method: "POST",
-                    url: "/verses",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload: expectedValue,
-                });
+                const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(200);
                 expect(JSON.parse(res.payload)).toEqual(expectedValue);
@@ -218,15 +148,7 @@ describe("Test App Endpoints", () => {
 
             it("Throws Error", async () => {
                 app.db.verse.create.mockRejectedValue(errMsg);
-
-                const res = await app.inject({
-                    method: "POST",
-                    url: "/verses",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload: expectedValue,
-                });
+                const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(500);
                 expect(JSON.parse(res.payload)).toEqual({
@@ -239,19 +161,13 @@ describe("Test App Endpoints", () => {
 
         describe("PUT /verses", () => {
             const expectedValue = verses[0];
-            const errMsg = "Some Error";
+            const cloneOpts = { ...injectOpts };
+            cloneOpts.method = "PUT";
+            cloneOpts.payload = expectedValue;
 
             it("Success", async () => {
                 app.db.verse.update.mockResolvedValue(expectedValue);
-
-                const res = await app.inject({
-                    method: "PUT",
-                    url: "/verses",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload: expectedValue,
-                });
+                const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(200);
                 expect(JSON.parse(res.payload)).toEqual(expectedValue);
@@ -259,15 +175,7 @@ describe("Test App Endpoints", () => {
 
             it("Throws Error", async () => {
                 app.db.verse.update.mockRejectedValue(errMsg);
-
-                const res = await app.inject({
-                    method: "PUT",
-                    url: "/verses",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload: expectedValue,
-                });
+                const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(500);
                 expect(JSON.parse(res.payload)).toEqual({
@@ -286,19 +194,13 @@ describe("Test App Endpoints", () => {
         describe("DELETE /verses", () => {
             const expectedValue = verses[0];
             const payload = { id: expectedValue.id };
-            const errMsg = "Some Error";
+            const cloneOpts = { ...injectOpts };
+            cloneOpts.method = "DELETE";
+            cloneOpts.payload = payload;
 
             it("Success", async () => {
                 app.db.verse.delete.mockResolvedValue(expectedValue);
-
-                const res = await app.inject({
-                    method: "DELETE",
-                    url: "/verses",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload,
-                });
+                const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(200);
                 expect(JSON.parse(res.payload)).toEqual(expectedValue);
@@ -306,15 +208,7 @@ describe("Test App Endpoints", () => {
 
             it("Throws Error", async () => {
                 app.db.verse.delete.mockRejectedValue(errMsg);
-
-                const res = await app.inject({
-                    method: "DELETE",
-                    url: "/verses",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload,
-                });
+                const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(500);
                 expect(JSON.parse(res.payload)).toEqual({
@@ -327,79 +221,56 @@ describe("Test App Endpoints", () => {
     });
 
     describe("Test /graphql", () => {
-        describe("Queries All Verses", () => {
-            const expectedValue = verses;
-
-            it("Return Success", async () => {
-                app.db.verse.findMany.mockResolvedValue(expectedValue);
-
-                const payload = gql.query({
-                    operation: "verse",
-                    fields: ["id", "title", "content"],
-                });
-
-                const res = await app.inject({
-                    method: "POST",
-                    url: "/graphql",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload,
-                });
-
-                expect(res.statusCode).toBe(200);
-                expect(JSON.parse(res.payload)).toEqual({
-                    data: {
-                        verse: expectedValue,
-                    },
-                });
-            });
-
-            it("Throw Error", async () => {
-                const errMsg = "Error Test";
-                app.db.verse.findMany.mockRejectedValue(errMsg);
-
-                const payload = gql.query({
-                    operation: "verse",
-                    fields: ["id", "title", "content"],
-                });
-
-                const res = await app.inject({
-                    method: "POST",
-                    url: "/graphql",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload,
-                });
-
-                expect(res.statusCode).toBe(200);
-                expect(JSON.parse(res.payload)).toEqual({
-                    data: {
-                        verse: null,
-                    },
-                    errors: [
+        const cloneOpts = { ...injectOpts };
+        cloneOpts.method = "POST";
+        cloneOpts.url = "/graphql";
+        const errObj = {
+            data: { verse: null },
+            errors: [
+                {
+                    message: errMsg,
+                    path: ["verse"],
+                    locations: expect.arrayContaining([
                         {
-                            message: errMsg,
-                            path: ["verse"],
-                            locations: expect.arrayContaining([
-                                {
-                                    line: expect.any(Number),
-                                    column: expect.any(Number),
-                                },
-                            ]),
+                            line: expect.any(Number),
+                            column: expect.any(Number),
                         },
-                    ],
+                    ]),
+                },
+            ],
+        };
+
+        describe("Queries", () => {
+            describe("All Verses", () => {
+                const queryOpts = { ...cloneOpts };
+                const payload = gql.query({
+                    operation: "verse",
+                    fields: ["id", "title", "content"],
+                });
+                queryOpts.payload = payload;
+                const expectedValue = verses;
+
+                it("Return Success", async () => {
+                    app.db.verse.findMany.mockResolvedValue(expectedValue);
+                    const res = await app.inject(queryOpts);
+
+                    expect(res.statusCode).toBe(200);
+                    expect(JSON.parse(res.payload)).toEqual({
+                        data: { verse: expectedValue },
+                    });
+                });
+
+                it("Throw Error", async () => {
+                    app.db.verse.findMany.mockRejectedValue(errMsg);
+                    const res = await app.inject(queryOpts);
+
+                    expect(res.statusCode).toBe(200);
+                    expect(JSON.parse(res.payload)).toEqual(errObj);
                 });
             });
-        });
 
-        describe("Queries Specific Verse", () => {
-            const expectedValue = verses[0];
-
-            it("Return Success", async () => {
-                app.db.verse.findUnique.mockResolvedValue(expectedValue);
-
+            describe("Specific Verse", () => {
+                const expectedValue = verses[0];
                 const payload = gql.query({
                     operation: "verse",
                     variables: {
@@ -407,70 +278,32 @@ describe("Test App Endpoints", () => {
                     },
                     fields: ["id", "title", "content"],
                 });
+                const queryOpts = { ...cloneOpts };
+                queryOpts.payload = payload;
 
-                const res = await app.inject({
-                    method: "POST",
-                    url: "/graphql",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload,
+                it("Return Success", async () => {
+                    app.db.verse.findUnique.mockResolvedValue(expectedValue);
+                    const res = await app.inject(queryOpts);
+
+                    expect(res.statusCode).toBe(200);
+                    expect(JSON.parse(res.payload)).toEqual({
+                        data: { verse: [expectedValue] },
+                    });
                 });
 
-                expect(res.statusCode).toBe(200);
-                expect(JSON.parse(res.payload)).toEqual({
-                    data: {
-                        verse: [expectedValue],
-                    },
-                });
-            });
+                it("Throw Error", async () => {
+                    app.db.verse.findUnique.mockRejectedValue(errMsg);
+                    const res = await app.inject(queryOpts);
 
-            it("Throws Error", async () => {
-                const errMsg = "Error Test";
-                app.db.verse.findUnique.mockRejectedValue(errMsg);
-
-                const payload = gql.query({
-                    operation: "verse",
-                    variables: {
-                        id: 1,
-                    },
-                    fields: ["id", "title", "content"],
-                });
-
-                const res = await app.inject({
-                    method: "POST",
-                    url: "/graphql",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload,
-                });
-
-                expect(res.statusCode).toBe(200);
-                expect(JSON.parse(res.payload)).toEqual({
-                    data: { verse: null },
-                    errors: [
-                        {
-                            message: errMsg,
-                            path: ["verse"],
-                            locations: expect.arrayContaining([
-                                {
-                                    line: expect.any(Number),
-                                    column: expect.any(Number),
-                                },
-                            ]),
-                        },
-                    ],
+                    expect(res.statusCode).toBe(200);
+                    expect(JSON.parse(res.payload)).toEqual(errObj);
                 });
             });
         });
 
-        describe("Mutates single verse", () => {
-            const expectedValue = verses[0];
-
-            it("Return success", async () => {
-                app.db.verse.upsert.mockResolvedValue(expectedValue);
-
+        describe("Mutations", () => {
+            describe("Mutates single verse", () => {
+                const expectedValue = verses[0];
                 const payload = gql.mutation({
                     operation: "verse",
                     variables: {
@@ -489,72 +322,25 @@ describe("Test App Endpoints", () => {
                     },
                     fields: ["id", "title", "content"],
                 });
+                const mutationOpts = { ...cloneOpts };
+                mutationOpts.payload = payload;
 
-                const res = await app.inject({
-                    method: "POST",
-                    url: "/graphql",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload,
+                it("Return success", async () => {
+                    app.db.verse.upsert.mockResolvedValue(expectedValue);
+                    const res = await app.inject(mutationOpts);
+
+                    expect(res.statusCode).toBe(200);
+                    expect(JSON.parse(res.payload)).toEqual({
+                        data: { verse: expectedValue },
+                    });
                 });
 
-                expect(res.statusCode).toBe(200);
-                expect(JSON.parse(res.payload)).toEqual({
-                    data: {
-                        verse: expectedValue,
-                    },
-                });
-            });
+                it("Throw error", async () => {
+                    app.db.verse.upsert.mockRejectedValue(errMsg);
+                    const res = await app.inject(mutationOpts);
 
-            it("Throw error", async () => {
-                const someValue = verses[0];
-                const errMessage = "Error Test";
-                app.db.verse.upsert.mockRejectedValue(errMessage);
-
-                const payload = gql.mutation({
-                    operation: "verse",
-                    variables: {
-                        id: {
-                            value: someValue.id,
-                            required: true,
-                        },
-                        title: {
-                            value: someValue.title,
-                            required: true,
-                        },
-                        content: {
-                            value: someValue.content,
-                            required: true,
-                        },
-                    },
-                    fields: ["id", "title", "content"],
-                });
-
-                const res = await app.inject({
-                    method: "POST",
-                    url: "/graphql",
-                    headers: {
-                        authorization: process.env.SERVER_AUTH,
-                    },
-                    payload,
-                });
-
-                expect(res.statusCode).toBe(200);
-                expect(JSON.parse(res.payload)).toEqual({
-                    data: { verse: null },
-                    errors: [
-                        {
-                            message: errMessage,
-                            path: ["verse"],
-                            locations: expect.arrayContaining([
-                                {
-                                    line: expect.any(Number),
-                                    column: expect.any(Number),
-                                },
-                            ]),
-                        },
-                    ],
+                    expect(res.statusCode).toBe(200);
+                    expect(JSON.parse(res.payload)).toEqual(errObj);
                 });
             });
         });
