@@ -28,12 +28,10 @@ function registerPlugins(app: FastifyInstance) {
         }),
     }).after(() => {
         app.graphql.addHook("preParsing", async (schema, src, ctx) => {
-            const isAuthorized =
-                ctx.reply.request.headers.authorization !==
-                process.env.SERVER_AUTH;
+            const authHeader = ctx.reply.request.headers.authorization;
+            const isAuthorized = authHeader === process.env.SERVER_AUTH;
 
-            if (isAuthorized) {
-                // ctx.reply.unauthorized();
+            if (!isAuthorized) {
                 throw new Error("401 Unauthorized");
             }
         });
