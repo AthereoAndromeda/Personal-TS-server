@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import buildServer, { BuildReturn } from "../src/server";
 import fastify, { InjectOptions } from "fastify";
 import * as gql from "gql-query-builder";
@@ -6,7 +7,6 @@ import { PrismaClient, Verse } from "@prisma/client";
 import { DeepMockProxy } from "jest-mock-extended/lib/Mock";
 import "./helper";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore Due to circular reference errors
 interface MockServer extends BuildReturn {
     db: DeepMockProxy<PrismaClient>;
@@ -14,6 +14,7 @@ interface MockServer extends BuildReturn {
 
 describe("Test App Endpoints", () => {
     let app: MockServer;
+    const prismaMock = mockDeep<PrismaClient>();
     const errMsg = "Some Error";
     const verses: Verse[] = [
         {
@@ -37,14 +38,11 @@ describe("Test App Endpoints", () => {
     };
 
     beforeAll(async () => {
-        app = (await buildServer(fastify())) as MockServer;
-        const prismaMock = mockDeep<PrismaClient>();
-
-        app.db = prismaMock;
+        app = (await buildServer(fastify(), { db: prismaMock })) as MockServer;
     });
 
     afterEach(() => {
-        mockReset(app.db);
+        mockReset(prismaMock);
     });
 
     describe("Test /", () => {
