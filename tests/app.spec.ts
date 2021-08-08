@@ -32,6 +32,7 @@ describe("Test App Endpoints", () => {
         url: "/verses",
         headers: {
             authorization: process.env.SERVER_AUTH,
+            "content-type": "application/json",
         },
     };
 
@@ -239,6 +240,25 @@ describe("Test App Endpoints", () => {
                 },
             ],
         };
+
+        it("Return Unauthorized", async () => {
+            const payload = gql.query({
+                operation: "verse",
+                fields: ["id"],
+            });
+
+            const opts = JSON.parse(JSON.stringify(cloneOpts));
+            opts.headers.authorization = "wrong";
+            opts.payload = payload;
+
+            const res = await app.inject(opts);
+
+            expect(res.statusCode).toBe(500);
+            expect(JSON.parse(res.payload)).toEqual({
+                data: null,
+                errors: [{ message: "401 Unauthorized" }],
+            });
+        });
 
         describe("Queries", () => {
             describe("All Verses", () => {
