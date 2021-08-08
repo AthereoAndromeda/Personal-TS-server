@@ -1,35 +1,31 @@
 import { PrismaClient } from "@prisma/client";
 import { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { mock, mockClear } from "jest-mock-extended";
+import { mock, mockClear, stub } from "jest-mock-extended";
+import { PrismaPluginOptions } from "../src/plugins/prisma";
 
-describe("Test Prisma Plugin", () => {
-    let plugin: FastifyPluginAsync;
+describe("Test Plugins", () => {
     const mockServer = mock<FastifyInstance>();
-    const mockDB = mock<PrismaClient>();
-
-    beforeAll(async () => {
-        plugin = (await import("../src/plugins/prisma")).default;
-    });
+    const mockDB = stub<PrismaClient>();
 
     afterEach(() => {
         mockClear(mockServer);
         mockClear(mockDB);
     });
 
-    it("Pass DB to options", () => {
-        plugin(mockServer, {
-            db: mockDB,
+    describe("Test Prisma Plugin", () => {
+        let plugin: FastifyPluginAsync<PrismaPluginOptions>;
+        beforeAll(async () => {
+            plugin = (await import("../src/plugins/prisma")).default;
         });
 
-        expect(mockServer.decorate).toBeCalledWith("db", mockDB);
-    });
+        it("Pass DB to options", () => {
+            plugin(mockServer, {
+                db: mockDB,
+            });
 
-    it("Use defaults", () => {
-        plugin(mockServer, {});
-
-        expect(mockServer.decorate).toBeCalledWith(
-            "db",
-            expect.any(PrismaClient)
-        );
+            expect(mockServer.decorate).toBeCalledWith("db", {
+                getter: expect.any(Function),
+            });
+        });
     });
 });
