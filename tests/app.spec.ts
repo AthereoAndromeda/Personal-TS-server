@@ -258,5 +258,45 @@ describe("Test App Endpoints", () => {
                 },
             });
         });
+
+        it("Mutates single verse", async () => {
+            const expectedValue = verses[0];
+            app.db.verse.upsert.mockResolvedValue(expectedValue);
+
+            const payload = gql.mutation({
+                operation: "verse",
+                variables: {
+                    id: {
+                        value: expectedValue.id,
+                        required: true,
+                    },
+                    title: {
+                        value: expectedValue.title,
+                        required: true,
+                    },
+                    content: {
+                        value: expectedValue.content,
+                        required: true,
+                    },
+                },
+                fields: ["id", "title", "content"],
+            });
+
+            const res = await app.inject({
+                method: "POST",
+                url: "/graphql",
+                headers: {
+                    authorization: process.env.SERVER_AUTH,
+                },
+                payload,
+            });
+
+            expect(res.statusCode).toBe(200);
+            expect(JSON.parse(res.payload)).toEqual({
+                data: {
+                    verse: expectedValue,
+                },
+            });
+        });
     });
 });
