@@ -25,16 +25,25 @@ export const VerseQuery = queryField("verse", {
     },
     async resolve(_, args, ctx) {
         if (args.id) {
-            const data = await ctx.db.verse.findUnique({
-                where: {
-                    id: args.id,
-                },
-            });
-
-            return [data];
+            try {
+                const data = await ctx.db.verse.findUnique({
+                    where: {
+                        id: args.id,
+                    },
+                });
+                return [data];
+            } catch (error) {
+                ctx.req.server.log.error(error);
+                throw new Error(error);
+            }
         }
 
-        return await ctx.db.verse.findMany();
+        try {
+            return await ctx.db.verse.findMany();
+        } catch (error) {
+            ctx.req.server.log.error(error);
+            throw new Error(error);
+        }
     },
 });
 
@@ -46,22 +55,27 @@ export const VerseMutation = mutationField("verse", {
         content: nonNull(stringArg()),
     },
     async resolve(_, args, ctx) {
-        const res = await ctx.db.verse.upsert({
-            where: {
-                id: args.id,
-            },
-            update: {
-                id: args.id,
-                title: args.title,
-                content: args.content,
-            },
-            create: {
-                id: args.id,
-                title: args.title,
-                content: args.content,
-            },
-        });
+        try {
+            const res = await ctx.db.verse.upsert({
+                where: {
+                    id: args.id,
+                },
+                update: {
+                    id: args.id,
+                    title: args.title,
+                    content: args.content,
+                },
+                create: {
+                    id: args.id,
+                    title: args.title,
+                    content: args.content,
+                },
+            });
 
-        return res;
+            return res;
+        } catch (error) {
+            ctx.req.server.log.error(error);
+            throw new Error(error);
+        }
     },
 });
