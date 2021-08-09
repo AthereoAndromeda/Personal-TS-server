@@ -6,6 +6,9 @@ type Mutation {
   verse(content: String!, id: Int!, title: String!): Verse
 }
 
+"""Integers that will have a value greater than 0."""
+scalar PositiveInt
+
 type Query {
   verse(id: Int): [Verse]
 }

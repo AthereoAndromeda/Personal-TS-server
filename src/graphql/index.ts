@@ -14,6 +14,10 @@ export default makeSchema({
                 module: path.resolve(__dirname, "../schema/model.d.ts"),
                 alias: "model",
             },
+            {
+                module: path.resolve(__dirname, "./scalars.d.ts"),
+                alias: "scalars",
+            },
         ],
     },
     contextType: {

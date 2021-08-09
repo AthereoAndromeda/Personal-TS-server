@@ -4,9 +4,25 @@
  */
 
 import type * as model from "./../schema/model"
+import type * as scalars from "./scalars"
 import type { Context } from "./../schema/context"
-
-
+import type { core } from "nexus"
+declare global {
+  interface NexusGenCustomInputMethods<TypeName extends string> {
+    /**
+     * Integers that will have a value greater than 0.
+     */
+    positiveInt<FieldName extends string>(fieldName: FieldName, opts?: core.CommonInputFieldConfig<TypeName, FieldName>): void // "PositiveInt";
+  }
+}
+declare global {
+  interface NexusGenCustomOutputMethods<TypeName extends string> {
+    /**
+     * Integers that will have a value greater than 0.
+     */
+    positiveInt<FieldName extends string>(fieldName: FieldName, ...opts: core.ScalarOutSpread<TypeName, FieldName>): void // "PositiveInt";
+  }
+}
 
 
 declare global {
@@ -25,6 +41,7 @@ export interface NexusGenScalars {
   Float: number
   Boolean: boolean
   ID: string
+  PositiveInt: scalars.PositiveInt
 }
 
 export interface NexusGenObjects {
