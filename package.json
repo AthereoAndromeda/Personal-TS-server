@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "node -r dotenv/config .",
-    "ts-dev": "ts-node-dev  --rs --debug -r dotenv/config -- src/index.ts",
+    "ts-dev": "ts-node-dev --respawn --rs --debug -r dotenv/config -- src",
     "build": "tsc",
     "swc-build": "swc src -d dist",
     "start": "node .",
