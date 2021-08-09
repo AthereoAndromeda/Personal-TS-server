@@ -15,13 +15,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js 14
+    - name: Use Node.js 16
       uses: actions/setup-node@v2
       with:
         node-version: 16.x
         cache: 'npm'
 
-    - name: Install npm 7
+    - name: Install NPM 7
       run: npm i -g npm
 
     - name: Install TypeScript compiler
