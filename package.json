@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "dev": "node -r dotenv/config .",
-    "ts-dev": "ts-node-dev -r dotenv/config src/index.ts",
+    "ts-dev": "ts-node-dev --transpile-only -r dotenv/config src/index.ts",
+    "ts-dev:strict": "ts-node-dev -r dotenv/config src/index.ts",
     "build": "tsc",
     "swc-build": "swc src -d dist",
     "start": "node .",
