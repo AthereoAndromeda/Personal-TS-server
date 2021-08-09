@@ -3,7 +3,7 @@ import buildServer, { BuildReturn } from "../src/server";
 import fastify, { InjectOptions } from "fastify";
 import * as gql from "gql-query-builder";
 import { mockDeep, mockReset } from "jest-mock-extended";
-import { PrismaClient, Verse } from "@prisma/client";
+import { PrismaClient, Snipes, Verse } from "@prisma/client";
 import { DeepMockProxy } from "jest-mock-extended/lib/Mock";
 import "./helper";
 
@@ -36,6 +36,16 @@ describe("Test App Endpoints", () => {
             "content-type": "application/json",
         },
     };
+    const noAPIKey = {
+        statusCode: 401,
+        error: "Unauthorized",
+        message: "API Key Required",
+    };
+    const restErrObj = {
+        error: "Internal Server Error",
+        message: errMsg,
+        statusCode: 500,
+    };
 
     beforeAll(async () => {
         app = (await buildServer(fastify(), { db: prismaMock })) as MockServer;
@@ -58,12 +68,6 @@ describe("Test App Endpoints", () => {
     });
 
     describe("Test /verses", () => {
-        const noAPIKey = {
-            statusCode: 401,
-            error: "Unauthorized",
-            message: "API Key Required",
-        };
-
         it("Return 401 Unauthorized", async () => {
             const deepCloneOpts = JSON.parse(JSON.stringify(injectOpts));
             deepCloneOpts.headers.authorization = "incorrect";
@@ -89,11 +93,7 @@ describe("Test App Endpoints", () => {
                 const res = await app.inject(injectOpts);
 
                 expect(res.statusCode).toBe(500);
-                expect(JSON.parse(res.payload)).toEqual({
-                    error: "Internal Server Error",
-                    message: errMsg,
-                    statusCode: 500,
-                });
+                expect(JSON.parse(res.payload)).toEqual(restErrObj);
             });
         });
 
@@ -123,11 +123,7 @@ describe("Test App Endpoints", () => {
                 const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(500);
-                expect(JSON.parse(res.payload)).toEqual({
-                    error: "Internal Server Error",
-                    message: errMsg,
-                    statusCode: 500,
-                });
+                expect(JSON.parse(res.payload)).toEqual(restErrObj);
             });
         });
 
@@ -150,11 +146,7 @@ describe("Test App Endpoints", () => {
                 const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(500);
-                expect(JSON.parse(res.payload)).toEqual({
-                    error: "Internal Server Error",
-                    message: errMsg,
-                    statusCode: 500,
-                });
+                expect(JSON.parse(res.payload)).toEqual(restErrObj);
             });
         });
 
@@ -177,11 +169,7 @@ describe("Test App Endpoints", () => {
                 const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(500);
-                expect(JSON.parse(res.payload)).toEqual({
-                    error: "Internal Server Error",
-                    message: errMsg,
-                    statusCode: 500,
-                });
+                expect(JSON.parse(res.payload)).toEqual(restErrObj);
             });
         });
 
@@ -210,11 +198,37 @@ describe("Test App Endpoints", () => {
                 const res = await app.inject(cloneOpts);
 
                 expect(res.statusCode).toBe(500);
-                expect(JSON.parse(res.payload)).toEqual({
-                    error: "Internal Server Error",
-                    message: errMsg,
-                    statusCode: 500,
-                });
+                expect(JSON.parse(res.payload)).toEqual(restErrObj);
+            });
+        });
+    });
+
+    describe("Test /snipes", () => {
+        const expectedValue: Snipes = {
+            id: 1,
+            author: "Test Author",
+            content: "Test Content",
+        };
+
+        describe("GET /snipes", () => {
+            const cloneOpts = { ...injectOpts };
+            cloneOpts.method = "GET";
+            cloneOpts.url = "/snipes";
+
+            it("Success", async () => {
+                app.db.snipes.findFirst.mockResolvedValue(expectedValue);
+                const res = await app.inject(cloneOpts);
+
+                expect(res.statusCode).toBe(200);
+                expect(JSON.parse(res.payload)).toEqualNullable(expectedValue);
+            });
+
+            it("Throw Error", async () => {
+                app.db.snipes.findFirst.mockRejectedValue(errMsg);
+                const res = await app.inject(cloneOpts);
+
+                expect(res.statusCode).toBe(500);
+                expect(JSON.parse(res.payload)).toEqual(restErrObj);
             });
         });
     });
