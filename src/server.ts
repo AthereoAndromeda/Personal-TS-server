@@ -46,7 +46,10 @@ function registerPlugins(app: FastifyInstance, options: BuildServerOptions) {
         origin: "*",
     });
 
-    if (checkNodeEnv("development")) {
+    const shouldImportDevDeps =
+        checkNodeEnv("development") || checkNodeEnv("test");
+
+    if (shouldImportDevDeps) {
         import("altair-fastify-plugin").then(data => {
             const Altair = data.default;
             app.register(Altair, {
@@ -99,6 +102,10 @@ async function buildServer(
     options: BuildServerOptions
 ): Promise<BuildReturn> {
     try {
+        if (process.env.__THROW__ === "true") {
+            throw "For Testing purposes";
+        }
+
         registerPlugins(app, options); // 1
         registerCustomPlugins(app, options); // 2
         await registerRoutes(app); // 3
