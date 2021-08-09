@@ -15,6 +15,10 @@
             "./node_modules/**/*"
         ]
     },
+    "ts-node": {
+        "transpileOnly": true,
+        "transpiler": "ts-node/transpilers/swc-experimental",
+    },
     "exclude": [
         "prisma",
         "tests",
