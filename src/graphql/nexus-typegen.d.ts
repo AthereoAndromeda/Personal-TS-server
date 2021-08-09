@@ -3,9 +3,9 @@
  * Do not make changes to this file directly
  */
 
-import type * as model from "./../schema/model"
-import type * as scalars from "./scalars"
-import type { Context } from "./../schema/context"
+import type * as model from "./schema/model"
+import type * as scalars from "./schema/scalars"
+import type { Context } from "./schema/context"
 import type { core } from "nexus"
 declare global {
   interface NexusGenCustomInputMethods<TypeName extends string> {

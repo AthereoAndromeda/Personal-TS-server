@@ -11,17 +11,17 @@ export default makeSchema({
     sourceTypes: {
         modules: [
             {
-                module: path.resolve(__dirname, "../schema/model.d.ts"),
+                module: path.resolve(__dirname, "./schema/model.d.ts"),
                 alias: "model",
             },
             {
-                module: path.resolve(__dirname, "./scalars.d.ts"),
+                module: path.resolve(__dirname, "./schema/scalars.d.ts"),
                 alias: "scalars",
             },
         ],
     },
     contextType: {
-        module: path.resolve(__dirname, "../schema/context.d.ts"),
+        module: path.resolve(__dirname, "./schema/context.d.ts"),
         export: "Context",
     },
 });
