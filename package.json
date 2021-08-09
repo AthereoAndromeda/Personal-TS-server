@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@swc/cli": "^0.1.46",
-    "@swc/core": "^1.2.74",
+    "@swc/core": "^1.2.75",
     "@types/connect": "^3.4.35",
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.13",
