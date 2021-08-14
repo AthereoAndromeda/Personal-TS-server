@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/redstripez08/CalNatSci-TS-server#readme",
   "dependencies": {
-    "@prisma/client": "^2.29.0",
+    "@prisma/client": "^2.29.1",
     "@sinclair/typebox": "^0.20.4",
     "fastify": "^3.20.2",
     "fastify-auth": "^1.1.0",
