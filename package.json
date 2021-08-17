@@ -52,7 +52,7 @@
     "prisma": "^2.29.1"
   },
   "devDependencies": {
-    "@swc/cli": "^0.1.46",
+    "@swc/cli": "^0.1.49",
     "@swc/core": "^1.2.78",
     "@types/connect": "^3.4.35",
     "@types/jest": "^27.0.1",
