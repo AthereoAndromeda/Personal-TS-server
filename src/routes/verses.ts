@@ -52,7 +52,7 @@ const route: FastifyPluginCallback = (app, opts, done) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.internalServerError(error);
+                res.internalServerError(error as string);
             }
         }
     );
@@ -80,7 +80,7 @@ const route: FastifyPluginCallback = (app, opts, done) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.internalServerError(error);
+                res.internalServerError(error as string);
             }
         }
     );
@@ -111,7 +111,7 @@ const route: FastifyPluginCallback = (app, opts, done) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.internalServerError(error);
+                res.internalServerError(error as string);
             }
         }
     );
@@ -145,7 +145,7 @@ const route: FastifyPluginCallback = (app, opts, done) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.internalServerError(error);
+                res.internalServerError(error as string);
             }
         }
     );
@@ -174,7 +174,7 @@ const route: FastifyPluginCallback = (app, opts, done) => {
                 res.status(200).send(data);
             } catch (error) {
                 app.log.error(error);
-                res.internalServerError(error);
+                res.internalServerError(error as string);
             }
         }
     );

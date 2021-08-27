@@ -25,7 +25,7 @@ const route: FastifyPluginCallback = async (app, opts, done) => {
                 const data = await app.db.snipes.findFirst();
                 res.status(200).send(data);
             } catch (error) {
-                res.internalServerError(error);
+                res.internalServerError(error as string);
             }
         }
     );

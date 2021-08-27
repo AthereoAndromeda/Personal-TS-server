@@ -114,7 +114,7 @@ async function buildServer(
         return app;
     } catch (err) {
         app.log.error(err);
-        throw new Error(err);
+        throw new Error(err as string);
     }
 }
 

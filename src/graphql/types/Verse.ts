@@ -34,7 +34,7 @@ export const VerseQuery = queryField("verse", {
                 return [data];
             } catch (error) {
                 ctx.req.server.log.error(error);
-                throw new Error(error);
+                throw new Error(error as string);
             }
         }
 
@@ -42,7 +42,7 @@ export const VerseQuery = queryField("verse", {
             return await ctx.db.verse.findMany();
         } catch (error) {
             ctx.req.server.log.error(error);
-            throw new Error(error);
+            throw new Error(error as string);
         }
     },
 });
@@ -75,7 +75,7 @@ export const VerseMutation = mutationField("verse", {
             return res;
         } catch (error) {
             ctx.req.server.log.error(error);
-            throw new Error(error);
+            throw new Error(error as string);
         }
     },
 });
