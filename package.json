@@ -6,23 +6,23 @@
   "private": true,
   "scripts": {
     "dev": "node -r dotenv/config .",
-    "ts-dev": "ts-node-dev --respawn --rs --debug -r dotenv/config -- src",
+    "ts-dev": "tsnd --respawn --rs --debug -r dotenv/config -- src",
     "build": "tsc",
     "swc-build": "swc src -d dist",
     "start": "node .",
-    "ts-node": "ts-node-dev",
+    "ts-node": "tsnd",
     "test": "jest --coverage",
     "test:view": "http-server coverage/lcov-report"
   },
   "engines": {
-    "node": "^16.6.1",
-    "npm": "^7.20.3"
+    "node": ">=16.6.1",
+    "npm": ">=7.20.3"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redstripez08/CalNatSci-TS-server.git"
   },
-  "author": "Angelo",
+  "author": "Angelo <athereoandromeda@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/redstripez08/CalNatSci-TS-server/issues"
