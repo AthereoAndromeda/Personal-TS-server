@@ -53,10 +53,10 @@
   },
   "devDependencies": {
     "@swc/cli": "^0.1.49",
-    "@swc/core": "^1.2.84",
+    "@swc/core": "^1.2.85",
     "@types/connect": "^3.4.35",
     "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.13",
+    "@types/node": "^16.9.1",
     "@types/rewire": "^2.5.28",
     "@types/ws": "^7.4.7",
     "@typescript-eslint/eslint-plugin": "^4.31.0",
