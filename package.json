@@ -46,7 +46,7 @@
     "fastify-sensible": "^3.1.1",
     "got": "^11.8.2",
     "gql-query-builder": "^3.5.5",
-    "graphql": "^15.5.3",
+    "graphql": "^15.6.0",
     "graphql-scalars": "^1.10.1",
     "mercurius": "^8.2.1",
     "mercurius-auth": "^1.1.0",
