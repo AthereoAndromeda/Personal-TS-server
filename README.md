@@ -1,6 +1,6 @@
-# CalNatSci-TS-server
+# Personal-TS-server
 
-A server for [CalNatSci-TS](https://github.com/AthereoAndromeda/CalNatSci-TS)
+A server for [personal-discord-bot](https://github.com/AthereoAndromeda/personal-discord-bot)
 
 <div align="center">
 
